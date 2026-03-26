@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Entity {
+  id        String     @id @default(cuid())
+  name      String
+  apiKey    String
+  posts     ScheduledPost[]
+  batches   UploadBatch[]
+  accounts  SocialAccount[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model SocialAccount {
+  id                String   @id @default(cuid())
+  entityId          String
+  platform          String
+  handle            String
+  externalAccountId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  posts             ScheduledPost[]
+
+  entity Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+}
+
+model ScheduledPost {
+  id             String   @id @default(cuid())
+  entityId       String
+  accountId      String?
+  platform       String
+  title          String?
+  caption        String
+  videoUrl       String
+  publicVideoUrl String?
+  videoFileName  String?
+  scheduledAt    DateTime
+  status         String   @default("planned")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  batchPosts     BatchPost[]
+
+  entity  Entity         @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  account SocialAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+}
+
+model UploadBatch {
+  id        String   @id @default(cuid())
+  name      String
+  month     String
+  entityId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  batchPosts BatchPost[]
+
+  entity Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+}
+
+model BatchPost {
+  id            String   @id @default(cuid())
+  uploadBatchId String
+  scheduledPostId String
+  createdAt     DateTime @default(now())
+
+  uploadBatch   UploadBatch   @relation(fields: [uploadBatchId], references: [id], onDelete: Cascade)
+  scheduledPost ScheduledPost @relation(fields: [scheduledPostId], references: [id], onDelete: Cascade)
+}
