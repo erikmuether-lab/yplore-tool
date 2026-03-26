@@ -9,7 +9,7 @@ const prisma = new PrismaClient({
   adapter,
 });
 
-function getMonthMap() {
+function getMonthMap(): Record<string, number> {
   return {
     Januar: 0,
     Februar: 1,
@@ -23,7 +23,7 @@ function getMonthMap() {
     Oktober: 9,
     November: 10,
     Dezember: 11,
-  } satisfies Record<string, number>;
+  };
 }
 
 export async function POST(request: Request) {
@@ -108,6 +108,7 @@ export async function POST(request: Request) {
         title: post.title,
         caption: post.caption,
         videoUrl: post.videoUrl,
+        publicVideoUrl: post.publicVideoUrl,
         videoFileName: post.videoFileName,
         scheduledAt: newScheduledAt,
         status: "planned",
