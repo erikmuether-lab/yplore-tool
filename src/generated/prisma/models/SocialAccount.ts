@@ -462,6 +462,7 @@ export type SocialAccountCreateOrConnectWithoutEntityInput = {
 
 export type SocialAccountCreateManyEntityInputEnvelope = {
   data: Prisma.SocialAccountCreateManyEntityInput | Prisma.SocialAccountCreateManyEntityInput[]
+  skipDuplicates?: boolean
 }
 
 export type SocialAccountUpsertWithWhereUniqueWithoutEntityInput = {
@@ -1356,6 +1357,7 @@ export type SocialAccountCreateManyArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many SocialAccounts.
    */
   data: Prisma.SocialAccountCreateManyInput | Prisma.SocialAccountCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1374,6 +1376,7 @@ export type SocialAccountCreateManyAndReturnArgs<ExtArgs extends runtime.Types.E
    * The data used to create many SocialAccounts.
    */
   data: Prisma.SocialAccountCreateManyInput | Prisma.SocialAccountCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

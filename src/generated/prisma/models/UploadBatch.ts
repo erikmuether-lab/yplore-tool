@@ -432,6 +432,7 @@ export type UploadBatchCreateOrConnectWithoutEntityInput = {
 
 export type UploadBatchCreateManyEntityInputEnvelope = {
   data: Prisma.UploadBatchCreateManyEntityInput | Prisma.UploadBatchCreateManyEntityInput[]
+  skipDuplicates?: boolean
 }
 
 export type UploadBatchUpsertWithWhereUniqueWithoutEntityInput = {
@@ -1311,6 +1312,7 @@ export type UploadBatchCreateManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * The data used to create many UploadBatches.
    */
   data: Prisma.UploadBatchCreateManyInput | Prisma.UploadBatchCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1329,6 +1331,7 @@ export type UploadBatchCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ext
    * The data used to create many UploadBatches.
    */
   data: Prisma.UploadBatchCreateManyInput | Prisma.UploadBatchCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

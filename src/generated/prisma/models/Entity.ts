@@ -1322,6 +1322,7 @@ export type EntityCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * The data used to create many Entities.
    */
   data: Prisma.EntityCreateManyInput | Prisma.EntityCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1340,6 +1341,7 @@ export type EntityCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensio
    * The data used to create many Entities.
    */
   data: Prisma.EntityCreateManyInput | Prisma.EntityCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

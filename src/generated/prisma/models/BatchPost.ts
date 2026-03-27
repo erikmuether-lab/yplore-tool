@@ -400,6 +400,7 @@ export type BatchPostCreateOrConnectWithoutScheduledPostInput = {
 
 export type BatchPostCreateManyScheduledPostInputEnvelope = {
   data: Prisma.BatchPostCreateManyScheduledPostInput | Prisma.BatchPostCreateManyScheduledPostInput[]
+  skipDuplicates?: boolean
 }
 
 export type BatchPostUpsertWithWhereUniqueWithoutScheduledPostInput = {
@@ -447,6 +448,7 @@ export type BatchPostCreateOrConnectWithoutUploadBatchInput = {
 
 export type BatchPostCreateManyUploadBatchInputEnvelope = {
   data: Prisma.BatchPostCreateManyUploadBatchInput | Prisma.BatchPostCreateManyUploadBatchInput[]
+  skipDuplicates?: boolean
 }
 
 export type BatchPostUpsertWithWhereUniqueWithoutUploadBatchInput = {
@@ -1237,6 +1239,7 @@ export type BatchPostCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * The data used to create many BatchPosts.
    */
   data: Prisma.BatchPostCreateManyInput | Prisma.BatchPostCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1255,6 +1258,7 @@ export type BatchPostCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    * The data used to create many BatchPosts.
    */
   data: Prisma.BatchPostCreateManyInput | Prisma.BatchPostCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

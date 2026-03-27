@@ -1,16 +1,9 @@
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@/src/generated/prisma/client";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
-const adapter = new PrismaBetterSqlite3({
-  url: "file:./dev.db",
-});
-
-const prisma = new PrismaClient({
-  adapter,
-});
+const prisma = new PrismaClient();
 
 function getR2Config() {
   return {

@@ -644,6 +644,7 @@ export type ScheduledPostCreateOrConnectWithoutEntityInput = {
 
 export type ScheduledPostCreateManyEntityInputEnvelope = {
   data: Prisma.ScheduledPostCreateManyEntityInput | Prisma.ScheduledPostCreateManyEntityInput[]
+  skipDuplicates?: boolean
 }
 
 export type ScheduledPostUpsertWithWhereUniqueWithoutEntityInput = {
@@ -720,6 +721,7 @@ export type ScheduledPostCreateOrConnectWithoutAccountInput = {
 
 export type ScheduledPostCreateManyAccountInputEnvelope = {
   data: Prisma.ScheduledPostCreateManyAccountInput | Prisma.ScheduledPostCreateManyAccountInput[]
+  skipDuplicates?: boolean
 }
 
 export type ScheduledPostUpsertWithWhereUniqueWithoutAccountInput = {
@@ -1755,6 +1757,7 @@ export type ScheduledPostCreateManyArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many ScheduledPosts.
    */
   data: Prisma.ScheduledPostCreateManyInput | Prisma.ScheduledPostCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1773,6 +1776,7 @@ export type ScheduledPostCreateManyAndReturnArgs<ExtArgs extends runtime.Types.E
    * The data used to create many ScheduledPosts.
    */
   data: Prisma.ScheduledPostCreateManyInput | Prisma.ScheduledPostCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */
