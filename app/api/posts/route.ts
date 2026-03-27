@@ -1,9 +1,7 @@
-import { PrismaClient } from "@/src/generated/prisma/client";
+import { prisma } from "@/src/lib/prisma";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
-
-const prisma = new PrismaClient();
 
 function getR2Config() {
   return {
