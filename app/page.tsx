@@ -54,7 +54,7 @@ type ApiPost = {
   videoUrl: string;
   publicVideoUrl?: string | null;
   videoFileName?: string | null;
-  scheduledAt: string;
+  scheduledAt: string | Date;
   status: string;
   entity?: {
     id: string;
