@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/src/lib/prisma";
 import SubmitButton from "./components/SubmitButton";
+import CreatePostForm from "./components/CreatePostForm";
 
 type PlatformOption =
   | "Alle Plattformen"
@@ -855,7 +856,7 @@ export default async function Home({
                   Post erstellen
                 </h3>
 
-                <form method="post" action="/api/posts" encType="multipart/form-data">
+               <form method="post" action="/api/posts" encType="multipart/form-data">
                   <div
                     style={{
                       display: "grid",
@@ -970,7 +971,7 @@ export default async function Home({
                       Als Entwurf speichern
                     </button>
                   </div>
-                </form>
+                </form> 
               </div>
             )}
 
