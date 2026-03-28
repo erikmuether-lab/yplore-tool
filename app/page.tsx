@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { prisma } from "@/src/lib/prisma";
 import SubmitButton from "./components/SubmitButton";
 
 type PlatformOption =
@@ -68,27 +69,32 @@ type ApiPost = {
 };
 
 async function getEntities() {
-  const res = await fetch("http://localhost:3000/api/entities", {
-    cache: "no-store",
+  return prisma.entity.findMany({
+    orderBy: {
+      createdAt: "asc",
+    },
+    include: {
+      accounts: true,
+      posts: {
+        orderBy: {
+          scheduledAt: "asc",
+        },
+      },
+    },
   });
-
-  if (!res.ok) {
-    throw new Error("Fehler beim Laden der Einheiten");
-  }
-
-  return res.json();
 }
 
 async function getPosts() {
-  const res = await fetch("http://localhost:3000/api/posts", {
-    cache: "no-store",
+  return prisma.scheduledPost.findMany({
+    orderBy: {
+      scheduledAt: "asc",
+    },
+    include: {
+      entity: true,
+      account: true,
+    },
+    take: 500,
   });
-
-  if (!res.ok) {
-    throw new Error("Fehler beim Laden der Posts");
-  }
-
-  return res.json();
 }
 
 const platformOptions: PlatformOption[] = [
