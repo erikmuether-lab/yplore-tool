@@ -9,8 +9,6 @@ type PlatformOption =
   | "Instagram Reel"
   | "YouTube Short";
 
-type CreatePlatformOption = "tiktok" | "instagram" | "youtube";
-
 type SearchParams = {
   entity?: string;
   year?: string;
@@ -367,27 +365,6 @@ function sectionCardStyle() {
   return {
     ...cardStyle(),
     marginTop: "16px",
-  } as const;
-}
-
-function inputStyle() {
-  return {
-    width: "100%",
-    padding: "12px",
-    borderRadius: "12px",
-    border: "1px solid #334155",
-    background: "#0b1220",
-    color: "#f8fafc",
-  } as const;
-}
-
-function labelStyle() {
-  return {
-    display: "block",
-    marginBottom: "8px",
-    color: "#cbd5e1",
-    fontWeight: 600,
-    fontSize: "14px",
   } as const;
 }
 
@@ -856,122 +833,14 @@ export default async function Home({
                   Post erstellen
                 </h3>
 
-               <form method="post" action="/api/posts" encType="multipart/form-data">
-                  <div
-                    style={{
-                      display: "grid",
-                      gap: "14px",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                    }}
-                  >
-                    <div>
-                      <label style={labelStyle()}>Einheit</label>
-                      <select
-                        name="entityId"
-                        defaultValue={selectedEntity?.id}
-                        style={inputStyle()}
-                      >
-                        {entities.map((entity) => (
-                          <option key={entity.id} value={entity.id}>
-                            {entity.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label style={labelStyle()}>Titel</label>
-                      <input
-                        name="title"
-                        defaultValue="Neuer Post"
-                        style={inputStyle()}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={labelStyle()}>Plattform</label>
-                      <select
-                        name="platform"
-                        defaultValue={"tiktok" satisfies CreatePlatformOption}
-                        style={inputStyle()}
-                      >
-                        <option value="tiktok">TikTok</option>
-                        <option value="instagram">Instagram Reel</option>
-                        <option value="youtube">YouTube Short</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label style={labelStyle()}>Datum</label>
-                      <input
-                        name="date"
-                        type="date"
-                        defaultValue={berlinNow.isoDate}
-                        style={inputStyle()}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={labelStyle()}>Uhrzeit</label>
-                      <input
-                        name="time"
-                        type="time"
-                        defaultValue="10:00"
-                        style={inputStyle()}
-                      />
-                    </div>
-
-                    <div style={{ gridColumn: "1 / -1" }}>
-                      <label style={labelStyle()}>Caption</label>
-                      <textarea
-                        name="caption"
-                        defaultValue="Hier kommt die Caption hin"
-                        rows={4}
-                        style={inputStyle()}
-                      />
-                    </div>
-
-                    <div style={{ gridColumn: "1 / -1" }}>
-                      <label style={labelStyle()}>Video-Datei</label>
-                      <input
-                        name="videoFile"
-                        type="file"
-                        accept="video/*"
-                        style={inputStyle()}
-                      />
-                    </div>
-
-                    <div style={{ gridColumn: "1 / -1" }}>
-                      <label style={labelStyle()}>
-                        Öffentliche Video-URL (optional)
-                      </label>
-                      <input
-                        name="publicVideoUrl"
-                        type="url"
-                        placeholder="https://..."
-                        style={inputStyle()}
-                      />
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: "16px",
-                      display: "flex",
-                      gap: "10px",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <SubmitButton
-                      idleText="Post speichern"
-                      pendingText="Speichert..."
-                      style={primaryButtonStyle()}
-                    />
-                    <button type="button" style={secondaryButtonStyle()}>
-                      Als Entwurf speichern
-                    </button>
-                  </div>
-                </form> 
+                <CreatePostForm
+                  entities={entities.map((entity) => ({
+                    id: entity.id,
+                    name: entity.name,
+                  }))}
+                  selectedEntityId={selectedEntity?.id}
+                  defaultDate={berlinNow.isoDate}
+                />
               </div>
             )}
 
@@ -990,11 +859,28 @@ export default async function Home({
                     }}
                   >
                     <div>
-                      <label style={labelStyle()}>Quell-Einheit</label>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "8px",
+                          color: "#cbd5e1",
+                          fontWeight: 600,
+                          fontSize: "14px",
+                        }}
+                      >
+                        Quell-Einheit
+                      </label>
                       <select
                         name="sourceEntityId"
                         defaultValue={selectedEntity?.id}
-                        style={inputStyle()}
+                        style={{
+                          width: "100%",
+                          padding: "12px",
+                          borderRadius: "12px",
+                          border: "1px solid #334155",
+                          background: "#0b1220",
+                          color: "#f8fafc",
+                        }}
                       >
                         {entities.map((entity) => (
                           <option key={entity.id} value={entity.id}>
@@ -1005,11 +891,28 @@ export default async function Home({
                     </div>
 
                     <div>
-                      <label style={labelStyle()}>Quell-Monat</label>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "8px",
+                          color: "#cbd5e1",
+                          fontWeight: 600,
+                          fontSize: "14px",
+                        }}
+                      >
+                        Quell-Monat
+                      </label>
                       <select
                         name="sourceMonth"
                         defaultValue={selectedMonthLabel}
-                        style={inputStyle()}
+                        style={{
+                          width: "100%",
+                          padding: "12px",
+                          borderRadius: "12px",
+                          border: "1px solid #334155",
+                          background: "#0b1220",
+                          color: "#f8fafc",
+                        }}
                       >
                         {yearOptions.flatMap((year) =>
                           monthNames.map((monthName, index) => {
@@ -1025,11 +928,28 @@ export default async function Home({
                     </div>
 
                     <div>
-                      <label style={labelStyle()}>Ziel-Einheit</label>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "8px",
+                          color: "#cbd5e1",
+                          fontWeight: 600,
+                          fontSize: "14px",
+                        }}
+                      >
+                        Ziel-Einheit
+                      </label>
                       <select
                         name="targetEntityId"
                         defaultValue={selectedEntity?.id}
-                        style={inputStyle()}
+                        style={{
+                          width: "100%",
+                          padding: "12px",
+                          borderRadius: "12px",
+                          border: "1px solid #334155",
+                          background: "#0b1220",
+                          color: "#f8fafc",
+                        }}
                       >
                         {entities.map((entity) => (
                           <option key={entity.id} value={entity.id}>
@@ -1040,11 +960,28 @@ export default async function Home({
                     </div>
 
                     <div>
-                      <label style={labelStyle()}>Ziel-Monat</label>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "8px",
+                          color: "#cbd5e1",
+                          fontWeight: 600,
+                          fontSize: "14px",
+                        }}
+                      >
+                        Ziel-Monat
+                      </label>
                       <select
                         name="targetMonth"
                         defaultValue={selectedMonthLabel}
-                        style={inputStyle()}
+                        style={{
+                          width: "100%",
+                          padding: "12px",
+                          borderRadius: "12px",
+                          border: "1px solid #334155",
+                          background: "#0b1220",
+                          color: "#f8fafc",
+                        }}
                       >
                         {yearOptions.flatMap((year) =>
                           monthNames.map((monthName, index) => {
