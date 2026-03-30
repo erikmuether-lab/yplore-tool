@@ -16,6 +16,7 @@ type SearchParams = {
   platform?: string;
   create?: string;
   copy?: string;
+  copyDay?: string;
 };
 
 type SocialAccount = {
@@ -157,6 +158,7 @@ function buildFilterHref(params: {
   platform?: string;
   create?: string;
   copy?: string;
+  copyDay?: string;
 }) {
   const search = new URLSearchParams();
 
@@ -166,6 +168,7 @@ function buildFilterHref(params: {
   if (params.platform) search.set("platform", params.platform);
   if (params.create) search.set("create", params.create);
   if (params.copy) search.set("copy", params.copy);
+  if (params.copyDay) search.set("copyDay", params.copyDay);
 
   const query = search.toString();
   return query ? `/?${query}` : "/";
@@ -506,6 +509,7 @@ export default async function Home({
 
   const showCreateForm = getSingleValue(resolvedSearchParams.create) === "1";
   const showCopyPanel = getSingleValue(resolvedSearchParams.copy) === "1";
+  const showCopyDayPanel = getSingleValue(resolvedSearchParams.copyDay) === "1";
 
   const selectedEntity =
     entities.find((entity) => entity.name === selectedEntityName) ?? entities[0];
@@ -592,6 +596,7 @@ export default async function Home({
                   platform: selectedPlatformLabel,
                   create: showCreateForm ? "1" : undefined,
                   copy: showCopyPanel ? "1" : undefined,
+                  copyDay: showCopyDayPanel ? "1" : undefined,
                 })}
                 style={pillStyle(entityName === selectedEntityName)}
               >
@@ -678,6 +683,7 @@ export default async function Home({
                     platform: selectedPlatformLabel,
                     create: showCreateForm ? undefined : "1",
                     copy: showCopyPanel ? "1" : undefined,
+                    copyDay: showCopyDayPanel ? "1" : undefined,
                   })}
                   style={primaryButtonStyle()}
                 >
@@ -692,10 +698,26 @@ export default async function Home({
                     platform: selectedPlatformLabel,
                     create: showCreateForm ? "1" : undefined,
                     copy: showCopyPanel ? undefined : "1",
+                    copyDay: showCopyDayPanel ? "1" : undefined,
                   })}
                   style={secondaryButtonStyle()}
                 >
                   {showCopyPanel ? "Kopieren schließen" : "Monat kopieren"}
+                </Link>
+
+                <Link
+                  href={buildFilterHref({
+                    entity: selectedEntityName,
+                    year: String(selectedYear),
+                    month: String(selectedMonthIndex),
+                    platform: selectedPlatformLabel,
+                    create: showCreateForm ? "1" : undefined,
+                    copy: showCopyPanel ? "1" : undefined,
+                    copyDay: showCopyDayPanel ? undefined : "1",
+                  })}
+                  style={secondaryButtonStyle()}
+                >
+                  {showCopyDayPanel ? "Tag kopieren schließen" : "Tag kopieren"}
                 </Link>
               </div>
             </div>
@@ -755,6 +777,7 @@ export default async function Home({
                             platform: selectedPlatformLabel,
                             create: showCreateForm ? "1" : undefined,
                             copy: showCopyPanel ? "1" : undefined,
+                            copyDay: showCopyDayPanel ? "1" : undefined,
                           })}
                           style={pillStyle(year === selectedYear)}
                         >
@@ -785,6 +808,7 @@ export default async function Home({
                             platform: selectedPlatformLabel,
                             create: showCreateForm ? "1" : undefined,
                             copy: showCopyPanel ? "1" : undefined,
+                            copyDay: showCopyDayPanel ? "1" : undefined,
                           })}
                           style={pillStyle(index === selectedMonthIndex)}
                         >
@@ -815,6 +839,7 @@ export default async function Home({
                             platform,
                             create: showCreateForm ? "1" : undefined,
                             copy: showCopyPanel ? "1" : undefined,
+                            copyDay: showCopyDayPanel ? "1" : undefined,
                           })}
                           style={pillStyle(platform === selectedPlatformLabel)}
                         >
@@ -1013,6 +1038,157 @@ export default async function Home({
                     <button type="button" style={secondaryButtonStyle()}>
                       Nur Zeiten kopieren
                     </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {showCopyDayPanel && (
+              <div style={sectionCardStyle()}>
+                <h3 style={{ margin: "0 0 14px 0", color: "#f9fafb" }}>
+                  Tag kopieren
+                </h3>
+
+                <form method="post" action="/api/posts/copy-day">
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: "14px",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                    }}
+                  >
+                    <div>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "8px",
+                          color: "#cbd5e1",
+                          fontWeight: 600,
+                          fontSize: "14px",
+                        }}
+                      >
+                        Quell-Einheit
+                      </label>
+                      <select
+                        name="sourceEntityId"
+                        defaultValue={selectedEntity?.id}
+                        style={{
+                          width: "100%",
+                          padding: "12px",
+                          borderRadius: "12px",
+                          border: "1px solid #334155",
+                          background: "#0b1220",
+                          color: "#f8fafc",
+                        }}
+                      >
+                        {entities.map((entity) => (
+                          <option key={entity.id} value={entity.id}>
+                            {entity.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "8px",
+                          color: "#cbd5e1",
+                          fontWeight: 600,
+                          fontSize: "14px",
+                        }}
+                      >
+                        Quell-Datum
+                      </label>
+                      <input
+                        name="sourceDate"
+                        type="date"
+                        defaultValue={berlinNow.isoDate}
+                        style={{
+                          width: "100%",
+                          padding: "12px",
+                          borderRadius: "12px",
+                          border: "1px solid #334155",
+                          background: "#0b1220",
+                          color: "#f8fafc",
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "8px",
+                          color: "#cbd5e1",
+                          fontWeight: 600,
+                          fontSize: "14px",
+                        }}
+                      >
+                        Ziel-Einheit
+                      </label>
+                      <select
+                        name="targetEntityId"
+                        defaultValue={selectedEntity?.id}
+                        style={{
+                          width: "100%",
+                          padding: "12px",
+                          borderRadius: "12px",
+                          border: "1px solid #334155",
+                          background: "#0b1220",
+                          color: "#f8fafc",
+                        }}
+                      >
+                        {entities.map((entity) => (
+                          <option key={entity.id} value={entity.id}>
+                            {entity.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "8px",
+                          color: "#cbd5e1",
+                          fontWeight: 600,
+                          fontSize: "14px",
+                        }}
+                      >
+                        Ziel-Datum
+                      </label>
+                      <input
+                        name="targetDate"
+                        type="date"
+                        defaultValue={berlinNow.isoDate}
+                        style={{
+                          width: "100%",
+                          padding: "12px",
+                          borderRadius: "12px",
+                          border: "1px solid #334155",
+                          background: "#0b1220",
+                          color: "#f8fafc",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: "16px",
+                      display: "flex",
+                      gap: "10px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <SubmitButton
+                      idleText="Tag duplizieren"
+                      pendingText="Dupliziert..."
+                      style={primaryButtonStyle()}
+                    />
                   </div>
                 </form>
               </div>
