@@ -47,12 +47,14 @@ function getSafeTargetDate(
     0
   ).getDate();
 
-  const safeDay = Math.min(targetDay, lastDayOfTargetMonth);
+  if (targetDay > lastDayOfTargetMonth) {
+    return null;
+  }
 
   return new Date(
     targetYear,
     targetMonthIndex,
-    safeDay,
+    targetDay,
     hours,
     minutes,
     0,
@@ -66,24 +68,27 @@ export async function POST(request: Request) {
   const sourceEntityId = String(formData.get("sourceEntityId") ?? "").trim();
   const sourceDate = String(formData.get("sourceDate") ?? "").trim();
   const targetEntityId = String(formData.get("targetEntityId") ?? "").trim();
-  const targetDate = String(formData.get("targetDate") ?? "").trim();
 
-  if (!sourceEntityId || !sourceDate || !targetEntityId || !targetDate) {
+  const targetDates = formData
+    .getAll("targetDates")
+    .map((value) => String(value ?? "").trim())
+    .filter(Boolean);
+
+  if (!sourceEntityId || !sourceDate || !targetEntityId || targetDates.length === 0) {
     return Response.json(
       {
         error:
-          "sourceEntityId, sourceDate, targetEntityId und targetDate sind erforderlich.",
+          "sourceEntityId, sourceDate, targetEntityId und mindestens ein targetDates-Wert sind erforderlich.",
       },
       { status: 400 }
     );
   }
 
   const sourceParts = parseDateParts(sourceDate);
-  const targetParts = parseDateParts(targetDate);
 
-  if (!sourceParts || !targetParts) {
+  if (!sourceParts) {
     return Response.json(
-      { error: "sourceDate oder targetDate ist ungültig." },
+      { error: "sourceDate ist ungültig." },
       { status: 400 }
     );
   }
@@ -120,34 +125,49 @@ export async function POST(request: Request) {
     );
   }
 
-  for (const post of filteredSourcePosts) {
-    const originalDate = new Date(post.scheduledAt);
+  for (const targetDate of targetDates) {
+    const targetParts = parseDateParts(targetDate);
 
-    const newScheduledAt = getSafeTargetDate(
-      targetParts.year,
-      targetParts.monthIndex,
-      targetParts.day,
-      originalDate.getHours(),
-      originalDate.getMinutes()
-    );
+    if (!targetParts) {
+      return Response.json(
+        { error: `targetDate ist ungültig: ${targetDate}` },
+        { status: 400 }
+      );
+    }
 
-    const targetAccount =
-      targetEntity.accounts.find((a) => a.platform === post.platform) ?? null;
+    for (const post of filteredSourcePosts) {
+      const originalDate = new Date(post.scheduledAt);
 
-    await prisma.scheduledPost.create({
-      data: {
-        entityId: targetEntityId,
-        accountId: targetAccount?.id ?? null,
-        platform: post.platform,
-        title: post.title,
-        caption: post.caption,
-        videoUrl: post.videoUrl,
-        publicVideoUrl: post.publicVideoUrl,
-        videoFileName: post.videoFileName,
-        scheduledAt: newScheduledAt,
-        status: "planned",
-      },
-    });
+      const newScheduledAt = getSafeTargetDate(
+        targetParts.year,
+        targetParts.monthIndex,
+        targetParts.day,
+        originalDate.getHours(),
+        originalDate.getMinutes()
+      );
+
+      if (!newScheduledAt) {
+        continue;
+      }
+
+      const targetAccount =
+        targetEntity.accounts.find((a) => a.platform === post.platform) ?? null;
+
+      await prisma.scheduledPost.create({
+        data: {
+          entityId: targetEntityId,
+          accountId: targetAccount?.id ?? null,
+          platform: post.platform,
+          title: post.title,
+          caption: post.caption,
+          videoUrl: post.videoUrl,
+          publicVideoUrl: post.publicVideoUrl,
+          videoFileName: post.videoFileName,
+          scheduledAt: newScheduledAt,
+          status: "planned",
+        },
+      });
+    }
   }
 
   return Response.redirect(new URL("/", request.url), 303);

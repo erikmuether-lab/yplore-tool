@@ -1,65 +1,40 @@
 import { prisma } from "@/src/lib/prisma";
 
-function getMonthMap(): Record<string, number> {
-  return {
-    Januar: 0,
-    Februar: 1,
-    März: 2,
-    April: 3,
-    Mai: 4,
-    Juni: 5,
-    Juli: 6,
-    August: 7,
-    September: 8,
-    Oktober: 9,
-    November: 10,
-    Dezember: 11,
-  };
-}
+function parseYear(value: string) {
+  const year = Number(String(value ?? "").trim());
 
-function parseMonthLabel(value: string) {
-  const [monthName, yearString] = value.trim().split(" ");
-  const monthMap = getMonthMap();
-  const monthIndex = monthMap[monthName];
-  const year = Number(yearString);
-
-  if (monthIndex === undefined || Number.isNaN(year)) {
+  if (Number.isNaN(year) || year < 2000 || year > 2100) {
     return null;
   }
 
-  return { monthIndex, year };
+  return year;
+}
+
+function isSameLocalYear(date: Date, year: number) {
+  return date.getFullYear() === year;
 }
 
 function getDaysInMonth(year: number, monthIndex: number) {
   return new Date(year, monthIndex + 1, 0).getDate();
 }
 
-function normalizeMonthLabel(date: Date) {
-  const month = date.toLocaleDateString("de-DE", {
-    month: "long",
-    year: "numeric",
-  });
-
-  return month.charAt(0).toUpperCase() + month.slice(1);
-}
-
 export async function POST(request: Request) {
   const formData = await request.formData();
 
   const sourceEntityId = String(formData.get("sourceEntityId") ?? "").trim();
-  const sourceMonth = String(formData.get("sourceMonth") ?? "").trim();
+  const sourceYear = parseYear(formData.get("sourceYear"));
   const targetEntityId = String(formData.get("targetEntityId") ?? "").trim();
 
-  const targetMonths = formData
-    .getAll("targetMonths")
-    .map((value) => String(value ?? "").trim())
-    .filter(Boolean);
+  const targetYears = formData
+    .getAll("targetYears")
+    .map((value) => parseYear(value))
+    .filter((value): value is number => value !== null);
 
-  if (!sourceEntityId || !sourceMonth || !targetEntityId || targetMonths.length === 0) {
+  if (!sourceEntityId || !sourceYear || !targetEntityId || targetYears.length === 0) {
     return Response.json(
       {
         error:
-          "sourceEntityId, sourceMonth, targetEntityId und mindestens ein targetMonths-Wert sind erforderlich.",
+          "sourceEntityId, sourceYear, targetEntityId und mindestens ein targetYears-Wert sind erforderlich.",
       },
       { status: 400 }
     );
@@ -75,8 +50,8 @@ export async function POST(request: Request) {
   });
 
   const filteredSourcePosts = sourcePosts.filter((post) => {
-    const normalizedMonth = normalizeMonthLabel(new Date(post.scheduledAt));
-    return normalizedMonth === sourceMonth;
+    const postDate = new Date(post.scheduledAt);
+    return isSameLocalYear(postDate, sourceYear);
   });
 
   const targetEntity = await prisma.entity.findUnique({
@@ -91,29 +66,20 @@ export async function POST(request: Request) {
     );
   }
 
-  for (const targetMonth of targetMonths) {
-    const parsedTarget = parseMonthLabel(targetMonth);
-
-    if (!parsedTarget) {
-      return Response.json(
-        { error: `Zielmonat ist ungültig: ${targetMonth}` },
-        { status: 400 }
-      );
-    }
-
-    const maxTargetDay = getDaysInMonth(parsedTarget.year, parsedTarget.monthIndex);
-
+  for (const targetYear of targetYears) {
     for (const post of filteredSourcePosts) {
       const originalDate = new Date(post.scheduledAt);
+      const originalMonthIndex = originalDate.getMonth();
       const originalDay = originalDate.getDate();
+      const maxTargetDay = getDaysInMonth(targetYear, originalMonthIndex);
 
       if (originalDay > maxTargetDay) {
         continue;
       }
 
       const newScheduledAt = new Date(
-        parsedTarget.year,
-        parsedTarget.monthIndex,
+        targetYear,
+        originalMonthIndex,
         originalDay,
         originalDate.getHours(),
         originalDate.getMinutes(),

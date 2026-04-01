@@ -17,6 +17,7 @@ type SearchParams = {
   create?: string;
   copy?: string;
   copyDay?: string;
+  copyYear?: string;
 };
 
 type SocialAccount = {
@@ -159,6 +160,7 @@ function buildFilterHref(params: {
   create?: string;
   copy?: string;
   copyDay?: string;
+  copyYear?: string;
 }) {
   const search = new URLSearchParams();
 
@@ -169,6 +171,7 @@ function buildFilterHref(params: {
   if (params.create) search.set("create", params.create);
   if (params.copy) search.set("copy", params.copy);
   if (params.copyDay) search.set("copyDay", params.copyDay);
+  if (params.copyYear) search.set("copyYear", params.copyYear);
 
   const query = search.toString();
   return query ? `/?${query}` : "/";
@@ -459,6 +462,50 @@ function metricCardStyle() {
   };
 }
 
+function fieldLabelStyle() {
+  return {
+    display: "block",
+    marginBottom: "8px",
+    color: "#cbd5e1",
+    fontWeight: 600,
+    fontSize: "14px",
+  } as const;
+}
+
+function fieldStyle() {
+  return {
+    width: "100%",
+    padding: "12px",
+    borderRadius: "12px",
+    border: "1px solid #334155",
+    background: "#0b1220",
+    color: "#f8fafc",
+  } as const;
+}
+
+function checkboxGridStyle() {
+  return {
+    display: "grid",
+    gap: "8px",
+    maxHeight: "220px",
+    overflowY: "auto" as const,
+    padding: "12px",
+    borderRadius: "12px",
+    border: "1px solid #334155",
+    background: "#0b1220",
+  } as const;
+}
+
+function checkboxItemStyle() {
+  return {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    color: "#f8fafc",
+    fontSize: "14px",
+  } as const;
+}
+
 function formatPlatformLabel(platform: string): Exclude<
   PlatformOption,
   "Alle Plattformen"
@@ -478,6 +525,94 @@ function formatStatusLabel(status: string) {
   if (status === "sent") return "Gesendet";
   if (status === "failed") return "Fehlgeschlagen";
   return status;
+}
+
+function getAllMonthOptions(yearOptions: number[]) {
+  return yearOptions.flatMap((year) =>
+    monthNames.map((monthName, index) => ({
+      value: formatMonthLabelFromIndex(index, year),
+      label: formatMonthLabelFromIndex(index, year),
+    }))
+  );
+}
+
+function getAllYearOptions(yearOptions: number[]) {
+  return yearOptions.map((year) => ({
+    value: String(year),
+    label: String(year),
+  }));
+}
+
+function getDefaultTargetMonthValues(
+  selectedYear: number,
+  selectedMonthIndex: number
+) {
+  const nextMonths: string[] = [];
+
+  for (let offset = 1; offset <= 3; offset += 1) {
+    const date = new Date(selectedYear, selectedMonthIndex + offset, 1);
+    nextMonths.push(formatMonthLabelFromIndex(date.getMonth(), date.getFullYear()));
+  }
+
+  return nextMonths;
+}
+
+function getDaysInMonth(year: number, monthIndex: number) {
+  return new Date(year, monthIndex + 1, 0).getDate();
+}
+
+function buildIsoDate(year: number, monthIndex: number, day: number) {
+  const month = String(monthIndex + 1).padStart(2, "0");
+  const paddedDay = String(day).padStart(2, "0");
+  return `${year}-${month}-${paddedDay}`;
+}
+
+function getSelectedMonthDefaultDate(
+  selectedYear: number,
+  selectedMonthIndex: number,
+  berlinNow: ReturnType<typeof getBerlinNowInfo>
+) {
+  const nowYear = Number(berlinNow.year);
+  const nowMonthIndex = berlinNow.monthIndex;
+  const nowDay = Number(berlinNow.day);
+
+  if (selectedYear === nowYear && selectedMonthIndex === nowMonthIndex) {
+    return berlinNow.isoDate;
+  }
+
+  return buildIsoDate(selectedYear, selectedMonthIndex, 1);
+}
+
+function getTargetDayOptions(selectedYear: number, selectedMonthIndex: number) {
+  const daysInMonth = getDaysInMonth(selectedYear, selectedMonthIndex);
+
+  return Array.from({ length: daysInMonth }, (_, index) => {
+    const day = index + 1;
+    const value = buildIsoDate(selectedYear, selectedMonthIndex, day);
+
+    return {
+      value,
+      label: `${String(day).padStart(2, "0")}.${String(selectedMonthIndex + 1).padStart(2, "0")}.${selectedYear}`,
+    };
+  });
+}
+
+function getDefaultTargetDateValues(
+  sourceDate: string,
+  selectedYear: number,
+  selectedMonthIndex: number
+) {
+  const source = new Date(`${sourceDate}T00:00:00`);
+  const daysInMonth = getDaysInMonth(selectedYear, selectedMonthIndex);
+  const sourceDay = source.getDate();
+
+  return [sourceDay + 1, sourceDay + 2, sourceDay + 3]
+    .filter((day) => day >= 1 && day <= daysInMonth)
+    .map((day) => buildIsoDate(selectedYear, selectedMonthIndex, day));
+}
+
+function getDefaultTargetYearValues(selectedYear: number) {
+  return [selectedYear + 1, selectedYear + 2, selectedYear + 3].map(String);
 }
 
 export default async function Home({
@@ -510,6 +645,7 @@ export default async function Home({
   const showCreateForm = getSingleValue(resolvedSearchParams.create) === "1";
   const showCopyPanel = getSingleValue(resolvedSearchParams.copy) === "1";
   const showCopyDayPanel = getSingleValue(resolvedSearchParams.copyDay) === "1";
+  const showCopyYearPanel = getSingleValue(resolvedSearchParams.copyYear) === "1";
 
   const selectedEntity =
     entities.find((entity) => entity.name === selectedEntityName) ?? entities[0];
@@ -565,6 +701,25 @@ export default async function Home({
     (_, index) => Number(berlinNow.year) + index
   );
 
+  const allMonthOptions = getAllMonthOptions(yearOptions);
+  const allYearOptions = getAllYearOptions(yearOptions);
+  const defaultTargetMonths = getDefaultTargetMonthValues(
+    selectedYear,
+    selectedMonthIndex
+  );
+  const selectedMonthDefaultDate = getSelectedMonthDefaultDate(
+    selectedYear,
+    selectedMonthIndex,
+    berlinNow
+  );
+  const targetDayOptions = getTargetDayOptions(selectedYear, selectedMonthIndex);
+  const defaultTargetDates = getDefaultTargetDateValues(
+    selectedMonthDefaultDate,
+    selectedYear,
+    selectedMonthIndex
+  );
+  const defaultTargetYears = getDefaultTargetYearValues(selectedYear);
+
   return (
     <main style={pageStyle()}>
       <div style={shellStyle()}>
@@ -597,6 +752,7 @@ export default async function Home({
                   create: showCreateForm ? "1" : undefined,
                   copy: showCopyPanel ? "1" : undefined,
                   copyDay: showCopyDayPanel ? "1" : undefined,
+                  copyYear: showCopyYearPanel ? "1" : undefined,
                 })}
                 style={pillStyle(entityName === selectedEntityName)}
               >
@@ -684,6 +840,7 @@ export default async function Home({
                     create: showCreateForm ? undefined : "1",
                     copy: showCopyPanel ? "1" : undefined,
                     copyDay: showCopyDayPanel ? "1" : undefined,
+                    copyYear: showCopyYearPanel ? "1" : undefined,
                   })}
                   style={primaryButtonStyle()}
                 >
@@ -699,10 +856,11 @@ export default async function Home({
                     create: showCreateForm ? "1" : undefined,
                     copy: showCopyPanel ? undefined : "1",
                     copyDay: showCopyDayPanel ? "1" : undefined,
+                    copyYear: showCopyYearPanel ? "1" : undefined,
                   })}
                   style={secondaryButtonStyle()}
                 >
-                  {showCopyPanel ? "Kopieren schließen" : "Monat kopieren"}
+                  {showCopyPanel ? "Monat kopieren schließen" : "Monat kopieren"}
                 </Link>
 
                 <Link
@@ -714,10 +872,27 @@ export default async function Home({
                     create: showCreateForm ? "1" : undefined,
                     copy: showCopyPanel ? "1" : undefined,
                     copyDay: showCopyDayPanel ? undefined : "1",
+                    copyYear: showCopyYearPanel ? "1" : undefined,
                   })}
                   style={secondaryButtonStyle()}
                 >
                   {showCopyDayPanel ? "Tag kopieren schließen" : "Tag kopieren"}
+                </Link>
+
+                <Link
+                  href={buildFilterHref({
+                    entity: selectedEntityName,
+                    year: String(selectedYear),
+                    month: String(selectedMonthIndex),
+                    platform: selectedPlatformLabel,
+                    create: showCreateForm ? "1" : undefined,
+                    copy: showCopyPanel ? "1" : undefined,
+                    copyDay: showCopyDayPanel ? "1" : undefined,
+                    copyYear: showCopyYearPanel ? undefined : "1",
+                  })}
+                  style={secondaryButtonStyle()}
+                >
+                  {showCopyYearPanel ? "Jahr kopieren schließen" : "Jahr kopieren"}
                 </Link>
               </div>
             </div>
@@ -778,6 +953,7 @@ export default async function Home({
                             create: showCreateForm ? "1" : undefined,
                             copy: showCopyPanel ? "1" : undefined,
                             copyDay: showCopyDayPanel ? "1" : undefined,
+                            copyYear: showCopyYearPanel ? "1" : undefined,
                           })}
                           style={pillStyle(year === selectedYear)}
                         >
@@ -809,6 +985,7 @@ export default async function Home({
                             create: showCreateForm ? "1" : undefined,
                             copy: showCopyPanel ? "1" : undefined,
                             copyDay: showCopyDayPanel ? "1" : undefined,
+                            copyYear: showCopyYearPanel ? "1" : undefined,
                           })}
                           style={pillStyle(index === selectedMonthIndex)}
                         >
@@ -840,6 +1017,7 @@ export default async function Home({
                             create: showCreateForm ? "1" : undefined,
                             copy: showCopyPanel ? "1" : undefined,
                             copyDay: showCopyDayPanel ? "1" : undefined,
+                            copyYear: showCopyYearPanel ? "1" : undefined,
                           })}
                           style={pillStyle(platform === selectedPlatformLabel)}
                         >
@@ -884,28 +1062,11 @@ export default async function Home({
                     }}
                   >
                     <div>
-                      <label
-                        style={{
-                          display: "block",
-                          marginBottom: "8px",
-                          color: "#cbd5e1",
-                          fontWeight: 600,
-                          fontSize: "14px",
-                        }}
-                      >
-                        Quell-Einheit
-                      </label>
+                      <label style={fieldLabelStyle()}>Quell-Einheit</label>
                       <select
                         name="sourceEntityId"
                         defaultValue={selectedEntity?.id}
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          borderRadius: "12px",
-                          border: "1px solid #334155",
-                          background: "#0b1220",
-                          color: "#f8fafc",
-                        }}
+                        style={fieldStyle()}
                       >
                         {entities.map((entity) => (
                           <option key={entity.id} value={entity.id}>
@@ -916,65 +1077,26 @@ export default async function Home({
                     </div>
 
                     <div>
-                      <label
-                        style={{
-                          display: "block",
-                          marginBottom: "8px",
-                          color: "#cbd5e1",
-                          fontWeight: 600,
-                          fontSize: "14px",
-                        }}
-                      >
-                        Quell-Monat
-                      </label>
+                      <label style={fieldLabelStyle()}>Quell-Monat</label>
                       <select
                         name="sourceMonth"
                         defaultValue={selectedMonthLabel}
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          borderRadius: "12px",
-                          border: "1px solid #334155",
-                          background: "#0b1220",
-                          color: "#f8fafc",
-                        }}
+                        style={fieldStyle()}
                       >
-                        {yearOptions.flatMap((year) =>
-                          monthNames.map((monthName, index) => {
-                            const value = formatMonthLabelFromIndex(index, year);
-                            return (
-                              <option key={value} value={value}>
-                                {value}
-                              </option>
-                            );
-                          })
-                        )}
+                        {allMonthOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
                     <div>
-                      <label
-                        style={{
-                          display: "block",
-                          marginBottom: "8px",
-                          color: "#cbd5e1",
-                          fontWeight: 600,
-                          fontSize: "14px",
-                        }}
-                      >
-                        Ziel-Einheit
-                      </label>
+                      <label style={fieldLabelStyle()}>Ziel-Einheit</label>
                       <select
                         name="targetEntityId"
                         defaultValue={selectedEntity?.id}
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          borderRadius: "12px",
-                          border: "1px solid #334155",
-                          background: "#0b1220",
-                          color: "#f8fafc",
-                        }}
+                        style={fieldStyle()}
                       >
                         {entities.map((entity) => (
                           <option key={entity.id} value={entity.id}>
@@ -984,41 +1106,21 @@ export default async function Home({
                       </select>
                     </div>
 
-                    <div>
-                      <label
-                        style={{
-                          display: "block",
-                          marginBottom: "8px",
-                          color: "#cbd5e1",
-                          fontWeight: 600,
-                          fontSize: "14px",
-                        }}
-                      >
-                        Ziel-Monat
-                      </label>
-                      <select
-                        name="targetMonth"
-                        defaultValue={selectedMonthLabel}
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          borderRadius: "12px",
-                          border: "1px solid #334155",
-                          background: "#0b1220",
-                          color: "#f8fafc",
-                        }}
-                      >
-                        {yearOptions.flatMap((year) =>
-                          monthNames.map((monthName, index) => {
-                            const value = formatMonthLabelFromIndex(index, year);
-                            return (
-                              <option key={value} value={value}>
-                                {value}
-                              </option>
-                            );
-                          })
-                        )}
-                      </select>
+                    <div style={{ gridColumn: "1 / -1" }}>
+                      <label style={fieldLabelStyle()}>Ziel-Monate</label>
+                      <div style={checkboxGridStyle()}>
+                        {allMonthOptions.map((option) => (
+                          <label key={option.value} style={checkboxItemStyle()}>
+                            <input
+                              type="checkbox"
+                              name="targetMonths"
+                              value={option.value}
+                              defaultChecked={defaultTargetMonths.includes(option.value)}
+                            />
+                            <span>{option.label}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
@@ -1031,13 +1133,10 @@ export default async function Home({
                     }}
                   >
                     <SubmitButton
-                      idleText="Monat duplizieren"
+                      idleText="Monate duplizieren"
                       pendingText="Dupliziert..."
                       style={primaryButtonStyle()}
                     />
-                    <button type="button" style={secondaryButtonStyle()}>
-                      Nur Zeiten kopieren
-                    </button>
                   </div>
                 </form>
               </div>
@@ -1058,28 +1157,11 @@ export default async function Home({
                     }}
                   >
                     <div>
-                      <label
-                        style={{
-                          display: "block",
-                          marginBottom: "8px",
-                          color: "#cbd5e1",
-                          fontWeight: 600,
-                          fontSize: "14px",
-                        }}
-                      >
-                        Quell-Einheit
-                      </label>
+                      <label style={fieldLabelStyle()}>Quell-Einheit</label>
                       <select
                         name="sourceEntityId"
                         defaultValue={selectedEntity?.id}
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          borderRadius: "12px",
-                          border: "1px solid #334155",
-                          background: "#0b1220",
-                          color: "#f8fafc",
-                        }}
+                        style={fieldStyle()}
                       >
                         {entities.map((entity) => (
                           <option key={entity.id} value={entity.id}>
@@ -1090,55 +1172,21 @@ export default async function Home({
                     </div>
 
                     <div>
-                      <label
-                        style={{
-                          display: "block",
-                          marginBottom: "8px",
-                          color: "#cbd5e1",
-                          fontWeight: 600,
-                          fontSize: "14px",
-                        }}
-                      >
-                        Quell-Datum
-                      </label>
+                      <label style={fieldLabelStyle()}>Quell-Datum</label>
                       <input
                         name="sourceDate"
                         type="date"
-                        defaultValue={berlinNow.isoDate}
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          borderRadius: "12px",
-                          border: "1px solid #334155",
-                          background: "#0b1220",
-                          color: "#f8fafc",
-                        }}
+                        defaultValue={selectedMonthDefaultDate}
+                        style={fieldStyle()}
                       />
                     </div>
 
                     <div>
-                      <label
-                        style={{
-                          display: "block",
-                          marginBottom: "8px",
-                          color: "#cbd5e1",
-                          fontWeight: 600,
-                          fontSize: "14px",
-                        }}
-                      >
-                        Ziel-Einheit
-                      </label>
+                      <label style={fieldLabelStyle()}>Ziel-Einheit</label>
                       <select
                         name="targetEntityId"
                         defaultValue={selectedEntity?.id}
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          borderRadius: "12px",
-                          border: "1px solid #334155",
-                          background: "#0b1220",
-                          color: "#f8fafc",
-                        }}
+                        style={fieldStyle()}
                       >
                         {entities.map((entity) => (
                           <option key={entity.id} value={entity.id}>
@@ -1148,31 +1196,21 @@ export default async function Home({
                       </select>
                     </div>
 
-                    <div>
-                      <label
-                        style={{
-                          display: "block",
-                          marginBottom: "8px",
-                          color: "#cbd5e1",
-                          fontWeight: 600,
-                          fontSize: "14px",
-                        }}
-                      >
-                        Ziel-Datum
-                      </label>
-                      <input
-                        name="targetDate"
-                        type="date"
-                        defaultValue={berlinNow.isoDate}
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          borderRadius: "12px",
-                          border: "1px solid #334155",
-                          background: "#0b1220",
-                          color: "#f8fafc",
-                        }}
-                      />
+                    <div style={{ gridColumn: "1 / -1" }}>
+                      <label style={fieldLabelStyle()}>Ziel-Tage</label>
+                      <div style={checkboxGridStyle()}>
+                        {targetDayOptions.map((option) => (
+                          <label key={option.value} style={checkboxItemStyle()}>
+                            <input
+                              type="checkbox"
+                              name="targetDates"
+                              value={option.value}
+                              defaultChecked={defaultTargetDates.includes(option.value)}
+                            />
+                            <span>{option.label}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
@@ -1185,7 +1223,102 @@ export default async function Home({
                     }}
                   >
                     <SubmitButton
-                      idleText="Tag duplizieren"
+                      idleText="Tage duplizieren"
+                      pendingText="Dupliziert..."
+                      style={primaryButtonStyle()}
+                    />
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {showCopyYearPanel && (
+              <div style={sectionCardStyle()}>
+                <h3 style={{ margin: "0 0 14px 0", color: "#f9fafb" }}>
+                  Jahr kopieren
+                </h3>
+
+                <form method="post" action="/api/posts/copy-year">
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: "14px",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                    }}
+                  >
+                    <div>
+                      <label style={fieldLabelStyle()}>Quell-Einheit</label>
+                      <select
+                        name="sourceEntityId"
+                        defaultValue={selectedEntity?.id}
+                        style={fieldStyle()}
+                      >
+                        {entities.map((entity) => (
+                          <option key={entity.id} value={entity.id}>
+                            {entity.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={fieldLabelStyle()}>Quell-Jahr</label>
+                      <select
+                        name="sourceYear"
+                        defaultValue={String(selectedYear)}
+                        style={fieldStyle()}
+                      >
+                        {allYearOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={fieldLabelStyle()}>Ziel-Einheit</label>
+                      <select
+                        name="targetEntityId"
+                        defaultValue={selectedEntity?.id}
+                        style={fieldStyle()}
+                      >
+                        {entities.map((entity) => (
+                          <option key={entity.id} value={entity.id}>
+                            {entity.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div style={{ gridColumn: "1 / -1" }}>
+                      <label style={fieldLabelStyle()}>Ziel-Jahre</label>
+                      <div style={checkboxGridStyle()}>
+                        {allYearOptions.map((option) => (
+                          <label key={option.value} style={checkboxItemStyle()}>
+                            <input
+                              type="checkbox"
+                              name="targetYears"
+                              value={option.value}
+                              defaultChecked={defaultTargetYears.includes(option.value)}
+                            />
+                            <span>{option.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: "16px",
+                      display: "flex",
+                      gap: "10px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <SubmitButton
+                      idleText="Jahre duplizieren"
                       pendingText="Dupliziert..."
                       style={primaryButtonStyle()}
                     />
