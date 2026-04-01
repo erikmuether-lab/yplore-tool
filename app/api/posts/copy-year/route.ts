@@ -22,12 +22,13 @@ export async function POST(request: Request) {
   const formData = await request.formData();
 
   const sourceEntityId = String(formData.get("sourceEntityId") ?? "").trim();
-  const sourceYear = parseYear(formData.get("sourceYear"));
+  const sourceYearValue = String(formData.get("sourceYear") ?? "").trim();
+  const sourceYear = parseYear(sourceYearValue);
   const targetEntityId = String(formData.get("targetEntityId") ?? "").trim();
 
   const targetYears = formData
     .getAll("targetYears")
-    .map((value) => parseYear(value))
+    .map((value) => parseYear(String(value ?? "").trim()))
     .filter((value): value is number => value !== null);
 
   if (!sourceEntityId || !sourceYear || !targetEntityId || targetYears.length === 0) {
