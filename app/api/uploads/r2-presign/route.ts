@@ -24,6 +24,8 @@ function createR2Client() {
       accessKeyId: config.accessKeyId,
       secretAccessKey: config.secretAccessKey,
     },
+    requestChecksumCalculation: "WHEN_REQUIRED",
+    responseChecksumValidation: "WHEN_REQUIRED",
   });
 }
 
@@ -34,15 +36,6 @@ function sanitizeFileName(fileName: string) {
 export async function POST(request: Request) {
   try {
     const config = getR2Config();
-
-    console.log("R2 presign route reached");
-    console.log("R2 config check", {
-      hasEndpoint: Boolean(config.endpoint),
-      hasAccessKeyId: Boolean(config.accessKeyId),
-      hasSecretAccessKey: Boolean(config.secretAccessKey),
-      hasBucketName: Boolean(config.bucketName),
-      hasPublicBaseUrl: Boolean(config.publicBaseUrl),
-    });
 
     if (
       !config.endpoint ||
@@ -61,8 +54,6 @@ export async function POST(request: Request) {
 
     const fileName = String(body.fileName ?? "").trim();
     const contentType = String(body.contentType ?? "").trim();
-
-    console.log("R2 presign input", { fileName, contentType });
 
     if (!fileName || !contentType) {
       return Response.json(
@@ -86,8 +77,6 @@ export async function POST(request: Request) {
     });
 
     const publicUrl = `${config.publicBaseUrl.replace(/\/+$/, "")}/${key}`;
-
-    console.log("R2 presign success", { key, publicUrl });
 
     return Response.json({
       success: true,
