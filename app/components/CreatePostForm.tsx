@@ -99,6 +99,24 @@ export default function CreatePostForm({
 
       const scheduledAt = new Date(`${date}T${time}:00`);
 
+            alert(
+            JSON.stringify(
+                {
+                date,
+                time,
+                scheduledAtLocal: scheduledAt.toString(),
+                scheduledAtIso: scheduledAt.toISOString(),
+                },
+                null,
+                2
+            )
+            );
+            
+        console.log("date", date);
+        console.log("time", time);
+        console.log("scheduledAt local", scheduledAt);
+        console.log("scheduledAt iso", scheduledAt.toISOString());
+
       const createResponse = await fetch("/api/posts", {
         method: "POST",
         headers: {

@@ -506,6 +506,55 @@ function checkboxItemStyle() {
   } as const;
 }
 
+function getBerlinDateParts(dateInput: string | Date) {
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Berlin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  const year = Number(parts.find((part) => part.type === "year")?.value ?? "1970");
+  const month = Number(parts.find((part) => part.type === "month")?.value ?? "01");
+  const day = Number(parts.find((part) => part.type === "day")?.value ?? "01");
+  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? "00");
+  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? "00");
+
+  return {
+    year,
+    monthIndex: month - 1,
+    day,
+    hour,
+    minute,
+  };
+}
+
+function formatBerlinTime(dateInput: string | Date) {
+  return new Intl.DateTimeFormat("de-DE", {
+    timeZone: "Europe/Berlin",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(dateInput instanceof Date ? dateInput : new Date(dateInput));
+}
+
+function formatBerlinDateTime(dateInput: string | Date) {
+  return new Intl.DateTimeFormat("de-DE", {
+    timeZone: "Europe/Berlin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(dateInput instanceof Date ? dateInput : new Date(dateInput));
+}
+
 function formatPlatformLabel(platform: string): Exclude<
   PlatformOption,
   "Alle Plattformen"
@@ -574,7 +623,6 @@ function getSelectedMonthDefaultDate(
 ) {
   const nowYear = Number(berlinNow.year);
   const nowMonthIndex = berlinNow.monthIndex;
-  const nowDay = Number(berlinNow.day);
 
   if (selectedYear === nowYear && selectedMonthIndex === nowMonthIndex) {
     return berlinNow.isoDate;
@@ -662,14 +710,14 @@ export default async function Home({
   const visiblePosts = selectedEntityPosts
     .filter((post) => {
       const platformLabel = formatPlatformLabel(post.platform);
-      const postDate = new Date(post.scheduledAt);
+      const berlinParts = getBerlinDateParts(post.scheduledAt);
 
       const platformMatches =
         selectedPlatformLabel === "Alle Plattformen" ||
         platformLabel === selectedPlatformLabel;
 
-      const monthMatches = postDate.getMonth() === selectedMonthIndex;
-      const yearMatches = postDate.getFullYear() === selectedYear;
+      const monthMatches = berlinParts.monthIndex === selectedMonthIndex;
+      const yearMatches = berlinParts.year === selectedYear;
 
       return platformMatches && monthMatches && yearMatches;
     })
@@ -679,16 +727,12 @@ export default async function Home({
     );
 
   const filteredCalendarPosts = visiblePosts.map((post) => {
-    const date = new Date(post.scheduledAt);
-    const timeLabel = date.toLocaleTimeString("de-DE", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const berlinParts = getBerlinDateParts(post.scheduledAt);
 
     return {
       id: post.id,
-      day: date.getDate(),
-      label: `${formatPlatformLabel(post.platform)} ${timeLabel}`,
+      day: berlinParts.day,
+      label: `${formatPlatformLabel(post.platform)} ${formatBerlinTime(post.scheduledAt)}`,
     };
   });
 
@@ -1475,7 +1519,7 @@ export default async function Home({
                     </div>
 
                     <div style={{ ...mutedTextStyle(), marginTop: "10px", fontSize: "13px" }}>
-                      {new Date(post.scheduledAt).toLocaleString("de-DE")}
+                      {formatBerlinDateTime(post.scheduledAt)}
                     </div>
 
                     {post.videoFileName ? (
