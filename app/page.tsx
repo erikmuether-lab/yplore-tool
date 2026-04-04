@@ -94,7 +94,7 @@ async function getPosts() {
       entity: true,
       account: true,
     },
-    take: 500,
+    take: 5000,
   });
 }
 
@@ -367,6 +367,42 @@ function dangerButtonStyle() {
   } as const;
 }
 
+function calendarDayDeleteButtonStyle() {
+  return {
+    width: "100%",
+    minHeight: "34px",
+    padding: "6px 10px",
+    borderRadius: "10px",
+    border: "1px solid #ef4444",
+    background: "#7f1d1d",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: 700,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: "10px",
+  } as const;
+}
+
+function monthDeleteButtonStyle() {
+  return {
+    minHeight: "42px",
+    padding: "8px 14px",
+    borderRadius: "10px",
+    border: "1px solid #ef4444",
+    background: "#7f1d1d",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: 700,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+  } as const;
+}
+
 function sectionCardStyle() {
   return {
     ...cardStyle(),
@@ -506,6 +542,48 @@ function checkboxItemStyle() {
   } as const;
 }
 
+function bulkBarStyle() {
+  return {
+    ...softCardStyle(),
+    marginTop: "16px",
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap" as const,
+    alignItems: "center",
+    justifyContent: "space-between",
+  };
+}
+
+function bulkButtonStyle() {
+  return {
+    minHeight: "42px",
+    padding: "8px 14px",
+    borderRadius: "10px",
+    border: "1px solid #475569",
+    background: "#1f2937",
+    color: "#f9fafb",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: 700,
+  } as const;
+}
+
+function bulkPrimaryButtonStyle() {
+  return {
+    ...bulkButtonStyle(),
+    border: "1px solid #3b82f6",
+    background: "#2563eb",
+  } as const;
+}
+
+function bulkDangerButtonStyle() {
+  return {
+    ...bulkButtonStyle(),
+    border: "1px solid #ef4444",
+    background: "#7f1d1d",
+  } as const;
+}
+
 function getBerlinDateParts(dateInput: string | Date) {
   const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
 
@@ -614,6 +692,11 @@ function buildIsoDate(year: number, monthIndex: number, day: number) {
   const month = String(monthIndex + 1).padStart(2, "0");
   const paddedDay = String(day).padStart(2, "0");
   return `${year}-${month}-${paddedDay}`;
+}
+
+function buildIsoMonth(year: number, monthIndex: number) {
+  const month = String(monthIndex + 1).padStart(2, "0");
+  return `${year}-${month}`;
 }
 
 function getSelectedMonthDefaultDate(
@@ -764,6 +847,21 @@ export default async function Home({
   );
   const defaultTargetYears = getDefaultTargetYearValues(selectedYear);
 
+  const currentHref = buildFilterHref({
+    entity: selectedEntityName,
+    year: String(selectedYear),
+    month: String(selectedMonthIndex),
+    platform: selectedPlatformLabel,
+    create: showCreateForm ? "1" : undefined,
+    copy: showCopyPanel ? "1" : undefined,
+    copyDay: showCopyDayPanel ? "1" : undefined,
+    copyYear: showCopyYearPanel ? "1" : undefined,
+  });
+
+  const postsReturnTo = `${currentHref}#planned-posts`;
+  const copyReturnTo = `${currentHref}#copy-tools`;
+  const selectedMonthIso = buildIsoMonth(selectedYear, selectedMonthIndex);
+
   return (
     <main style={pageStyle()}>
       <div style={shellStyle()}>
@@ -850,7 +948,7 @@ export default async function Home({
           </div>
         </section>
 
-        <section style={sectionStyle()}>
+        <section style={sectionStyle()} id="copy-tools">
           <div style={cardStyle()}>
             <div
               style={{
@@ -1098,6 +1196,7 @@ export default async function Home({
                 </h3>
 
                 <form method="post" action="/api/posts/copy-month">
+                  <input type="hidden" name="returnTo" value={copyReturnTo} />
                   <div
                     style={{
                       display: "grid",
@@ -1193,6 +1292,7 @@ export default async function Home({
                 </h3>
 
                 <form method="post" action="/api/posts/copy-day">
+                  <input type="hidden" name="returnTo" value={copyReturnTo} />
                   <div
                     style={{
                       display: "grid",
@@ -1283,6 +1383,7 @@ export default async function Home({
                 </h3>
 
                 <form method="post" action="/api/posts/copy-year">
+                  <input type="hidden" name="returnTo" value={copyReturnTo} />
                   <div
                     style={{
                       display: "grid",
@@ -1392,6 +1493,27 @@ export default async function Home({
 
             <div
               style={{
+                marginTop: "14px",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <form method="post" action="/api/posts/delete-month">
+                <input
+                  type="hidden"
+                  name="entityId"
+                  value={selectedEntity?.id ?? ""}
+                />
+                <input type="hidden" name="month" value={selectedMonthIso} />
+                <input type="hidden" name="returnTo" value={postsReturnTo} />
+                <button type="submit" style={monthDeleteButtonStyle()}>
+                  Diesen Monat löschen
+                </button>
+              </form>
+            </div>
+
+            <div
+              style={{
                 marginTop: "18px",
                 display: "grid",
                 gap: "12px",
@@ -1400,6 +1522,7 @@ export default async function Home({
             >
               {calendarDays.map((day) => {
                 const dayPosts = filteredCalendarPosts.filter((post) => post.day === day);
+                const dayIsoDate = buildIsoDate(selectedYear, selectedMonthIndex, day);
 
                 return (
                   <div
@@ -1431,6 +1554,21 @@ export default async function Home({
                         </div>
                       ))}
                     </div>
+
+                    {dayPosts.length > 0 ? (
+                      <form method="post" action="/api/posts/delete-day">
+                        <input
+                          type="hidden"
+                          name="entityId"
+                          value={selectedEntity?.id ?? ""}
+                        />
+                        <input type="hidden" name="date" value={dayIsoDate} />
+                        <input type="hidden" name="returnTo" value={postsReturnTo} />
+                        <button type="submit" style={calendarDayDeleteButtonStyle()}>
+                          Diesen Tag löschen
+                        </button>
+                      </form>
+                    ) : null}
                   </div>
                 );
               })}
@@ -1438,7 +1576,7 @@ export default async function Home({
           </div>
         </section>
 
-        <section style={sectionStyle()}>
+        <section style={sectionStyle()} id="planned-posts">
           <div style={cardStyle()}>
             <div
               style={{
@@ -1455,134 +1593,182 @@ export default async function Home({
               </small>
             </div>
 
-            <div
-              style={{
-                marginTop: "16px",
-                display: "grid",
-                gap: "12px",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              }}
-            >
-              {visiblePosts.length === 0 ? (
+            {visiblePosts.length > 0 ? (
+              <form method="post">
+                <input type="hidden" name="returnTo" value={postsReturnTo} />
+
+                <div style={bulkBarStyle()}>
+                  <small style={mutedTextStyle()}>
+                    Mehrere Checkboxen auswählen und dann gesammelt ausführen.
+                  </small>
+
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    <button
+                      type="submit"
+                      formaction="/api/posts/update-status"
+                      name="status"
+                      value="send-now"
+                      style={bulkPrimaryButtonStyle()}
+                    >
+                      Auswahl jetzt senden
+                    </button>
+
+                    <button
+                      type="submit"
+                      formaction="/api/posts/delete"
+                      style={bulkDangerButtonStyle()}
+                    >
+                      Auswahl löschen
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: "16px",
+                    display: "grid",
+                    gap: "12px",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                  }}
+                >
+                  {visiblePosts.map((post) => (
+                    <div
+                      key={post.id}
+                      style={{
+                        border: "1px solid #334155",
+                        borderRadius: "16px",
+                        padding: "14px",
+                        background: "#0f172a",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: "10px",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            fontWeight: 700,
+                          }}
+                        >
+                          <input type="checkbox" name="ids" value={post.id} />
+                          <span>{formatPlatformLabel(post.platform)}</span>
+                        </label>
+
+                        <span style={statusBadgeStyle(post.status)}>
+                          {formatStatusLabel(post.status)}
+                        </span>
+                      </div>
+
+                      {post.title ? (
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            color: "#f8fafc",
+                            marginBottom: "6px",
+                          }}
+                        >
+                          {post.title}
+                        </div>
+                      ) : null}
+
+                      <div
+                        style={{
+                          color: "#dbe4ee",
+                          fontSize: "14px",
+                          lineHeight: 1.5,
+                          minHeight: "44px",
+                        }}
+                      >
+                        {post.caption}
+                      </div>
+
+                      <div style={{ ...mutedTextStyle(), marginTop: "10px", fontSize: "13px" }}>
+                        {formatBerlinDateTime(post.scheduledAt)}
+                      </div>
+
+                      {post.videoFileName ? (
+                        <div style={{ ...mutedTextStyle(), marginTop: "6px", fontSize: "13px" }}>
+                          Datei: {post.videoFileName}
+                        </div>
+                      ) : null}
+
+                      <div
+                        style={{
+                          marginTop: "14px",
+                          display: "grid",
+                          gap: "8px",
+                          gridTemplateColumns: "1fr 1fr",
+                        }}
+                      >
+                        <form method="post" action="/api/posts/update-status">
+                          <input type="hidden" name="id" value={post.id} />
+                          <input type="hidden" name="status" value="sending" />
+                          <input type="hidden" name="returnTo" value={postsReturnTo} />
+                          <button type="submit" style={smallButtonStyle()}>
+                            Auf sending setzen
+                          </button>
+                        </form>
+
+                        <form method="post" action="/api/posts/update-status">
+                          <input type="hidden" name="id" value={post.id} />
+                          <input type="hidden" name="status" value="send-now" />
+                          <input type="hidden" name="returnTo" value={postsReturnTo} />
+                          <button type="submit" style={smallPrimaryButtonStyle()}>
+                            Jetzt senden
+                          </button>
+                        </form>
+
+                        <form method="post" action="/api/posts/update-status">
+                          <input type="hidden" name="id" value={post.id} />
+                          <input type="hidden" name="status" value="sent" />
+                          <input type="hidden" name="returnTo" value={postsReturnTo} />
+                          <button type="submit" style={smallButtonStyle()}>
+                            Auf sent setzen
+                          </button>
+                        </form>
+
+                        <form method="post" action="/api/posts/update-status">
+                          <input type="hidden" name="id" value={post.id} />
+                          <input type="hidden" name="status" value="failed" />
+                          <input type="hidden" name="returnTo" value={postsReturnTo} />
+                          <button type="submit" style={smallButtonStyle()}>
+                            Auf failed setzen
+                          </button>
+                        </form>
+
+                        <form
+                          method="post"
+                          action="/api/posts/delete"
+                          style={{ gridColumn: "1 / -1" }}
+                        >
+                          <input type="hidden" name="id" value={post.id} />
+                          <input type="hidden" name="returnTo" value={postsReturnTo} />
+                          <button type="submit" style={dangerButtonStyle()}>
+                            Post löschen
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </form>
+            ) : (
+              <div style={{ marginTop: "16px" }}>
                 <div style={softCardStyle()}>
                   <small style={mutedTextStyle()}>
                     Für diese Auswahl sind noch keine Posts vorhanden.
                   </small>
                 </div>
-              ) : (
-                visiblePosts.map((post) => (
-                  <div
-                    key={post.id}
-                    style={{
-                      border: "1px solid #334155",
-                      borderRadius: "16px",
-                      padding: "14px",
-                      background: "#0f172a",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: "10px",
-                        marginBottom: "10px",
-                      }}
-                    >
-                      <strong>{formatPlatformLabel(post.platform)}</strong>
-                      <span style={statusBadgeStyle(post.status)}>
-                        {formatStatusLabel(post.status)}
-                      </span>
-                    </div>
-
-                    {post.title ? (
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          color: "#f8fafc",
-                          marginBottom: "6px",
-                        }}
-                      >
-                        {post.title}
-                      </div>
-                    ) : null}
-
-                    <div
-                      style={{
-                        color: "#dbe4ee",
-                        fontSize: "14px",
-                        lineHeight: 1.5,
-                        minHeight: "44px",
-                      }}
-                    >
-                      {post.caption}
-                    </div>
-
-                    <div style={{ ...mutedTextStyle(), marginTop: "10px", fontSize: "13px" }}>
-                      {formatBerlinDateTime(post.scheduledAt)}
-                    </div>
-
-                    {post.videoFileName ? (
-                      <div style={{ ...mutedTextStyle(), marginTop: "6px", fontSize: "13px" }}>
-                        Datei: {post.videoFileName}
-                      </div>
-                    ) : null}
-
-                    <div
-                      style={{
-                        marginTop: "14px",
-                        display: "grid",
-                        gap: "8px",
-                        gridTemplateColumns: "1fr 1fr",
-                      }}
-                    >
-                      <form method="post" action="/api/posts/update-status">
-                        <input type="hidden" name="id" value={post.id} />
-                        <input type="hidden" name="status" value="sending" />
-                        <button type="submit" style={smallButtonStyle()}>
-                          Auf sending setzen
-                        </button>
-                      </form>
-
-                      <form method="post" action="/api/posts/update-status">
-                        <input type="hidden" name="id" value={post.id} />
-                        <input type="hidden" name="status" value="send-now" />
-                        <button type="submit" style={smallPrimaryButtonStyle()}>
-                          Jetzt senden
-                        </button>
-                      </form>
-
-                      <form method="post" action="/api/posts/update-status">
-                        <input type="hidden" name="id" value={post.id} />
-                        <input type="hidden" name="status" value="sent" />
-                        <button type="submit" style={smallButtonStyle()}>
-                          Auf sent setzen
-                        </button>
-                      </form>
-
-                      <form method="post" action="/api/posts/update-status">
-                        <input type="hidden" name="id" value={post.id} />
-                        <input type="hidden" name="status" value="failed" />
-                        <button type="submit" style={smallButtonStyle()}>
-                          Auf failed setzen
-                        </button>
-                      </form>
-
-                      <form
-                        method="post"
-                        action="/api/posts/delete"
-                        style={{ gridColumn: "1 / -1" }}
-                      >
-                        <input type="hidden" name="id" value={post.id} />
-                        <button type="submit" style={dangerButtonStyle()}>
-                          Post löschen
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </section>
       </div>

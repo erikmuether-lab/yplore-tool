@@ -34,13 +34,75 @@ function getDaysInMonth(year: number, monthIndex: number) {
   return new Date(year, monthIndex + 1, 0).getDate();
 }
 
-function normalizeMonthLabel(date: Date) {
-  const month = date.toLocaleDateString("de-DE", {
-    month: "long",
-    year: "numeric",
-  });
+function getBerlinDateParts(dateInput: string | Date) {
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
 
-  return month.charAt(0).toUpperCase() + month.slice(1);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Berlin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  return {
+    year: Number(parts.find((part) => part.type === "year")?.value ?? "1970"),
+    monthIndex:
+      Number(parts.find((part) => part.type === "month")?.value ?? "01") - 1,
+    day: Number(parts.find((part) => part.type === "day")?.value ?? "01"),
+    hour: Number(parts.find((part) => part.type === "hour")?.value ?? "00"),
+    minute: Number(parts.find((part) => part.type === "minute")?.value ?? "00"),
+  };
+}
+
+function normalizeMonthLabelFromBerlin(dateInput: string | Date) {
+  const parts = getBerlinDateParts(dateInput);
+  return `${Object.keys(getMonthMap())[parts.monthIndex]} ${parts.year}`;
+}
+
+function getBerlinOffsetMinutes(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Berlin",
+    timeZoneName: "shortOffset",
+    year: "numeric",
+  }).formatToParts(date);
+
+  const offsetText =
+    parts.find((part) => part.type === "timeZoneName")?.value ?? "GMT+0";
+
+  const match = offsetText.match(/^GMT([+-])(\d{1,2})(?::(\d{2}))?$/);
+
+  if (!match) {
+    return 0;
+  }
+
+  const sign = match[1] === "-" ? -1 : 1;
+  const hours = Number(match[2] ?? "0");
+  const minutes = Number(match[3] ?? "0");
+
+  return sign * (hours * 60 + minutes);
+}
+
+function createBerlinDate(
+  year: number,
+  monthIndex: number,
+  day: number,
+  hour: number,
+  minute: number
+) {
+  let result = new Date(Date.UTC(year, monthIndex, day, hour, minute, 0, 0));
+
+  for (let i = 0; i < 3; i += 1) {
+    const offsetMinutes = getBerlinOffsetMinutes(result);
+    result = new Date(
+      Date.UTC(year, monthIndex, day, hour, minute, 0, 0) -
+        offsetMinutes * 60_000
+    );
+  }
+
+  return result;
 }
 
 export async function POST(request: Request) {
@@ -49,6 +111,7 @@ export async function POST(request: Request) {
   const sourceEntityId = String(formData.get("sourceEntityId") ?? "").trim();
   const sourceMonth = String(formData.get("sourceMonth") ?? "").trim();
   const targetEntityId = String(formData.get("targetEntityId") ?? "").trim();
+  const returnTo = String(formData.get("returnTo") ?? "").trim();
 
   const targetMonths = formData
     .getAll("targetMonths")
@@ -75,7 +138,7 @@ export async function POST(request: Request) {
   });
 
   const filteredSourcePosts = sourcePosts.filter((post) => {
-    const normalizedMonth = normalizeMonthLabel(new Date(post.scheduledAt));
+    const normalizedMonth = normalizeMonthLabelFromBerlin(post.scheduledAt);
     return normalizedMonth === sourceMonth;
   });
 
@@ -104,21 +167,18 @@ export async function POST(request: Request) {
     const maxTargetDay = getDaysInMonth(parsedTarget.year, parsedTarget.monthIndex);
 
     for (const post of filteredSourcePosts) {
-      const originalDate = new Date(post.scheduledAt);
-      const originalDay = originalDate.getDate();
+      const originalParts = getBerlinDateParts(post.scheduledAt);
 
-      if (originalDay > maxTargetDay) {
+      if (originalParts.day > maxTargetDay) {
         continue;
       }
 
-      const newScheduledAt = new Date(
+      const newScheduledAt = createBerlinDate(
         parsedTarget.year,
         parsedTarget.monthIndex,
-        originalDay,
-        originalDate.getHours(),
-        originalDate.getMinutes(),
-        0,
-        0
+        originalParts.day,
+        originalParts.hour,
+        originalParts.minute
       );
 
       const targetAccount =
@@ -141,5 +201,9 @@ export async function POST(request: Request) {
     }
   }
 
-  return Response.redirect(new URL("/", request.url), 303);
+  const redirectUrl = returnTo
+    ? new URL(returnTo, request.url)
+    : new URL("/", request.url);
+
+  return Response.redirect(redirectUrl, 303);
 }

@@ -10,8 +10,37 @@ function parseYear(value: string) {
   return year;
 }
 
+function getBerlinDateParts(dateInput: string | Date) {
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Berlin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  const year = Number(parts.find((part) => part.type === "year")?.value ?? "1970");
+  const month = Number(parts.find((part) => part.type === "month")?.value ?? "01");
+  const day = Number(parts.find((part) => part.type === "day")?.value ?? "01");
+  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? "00");
+  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? "00");
+
+  return {
+    year,
+    monthIndex: month - 1,
+    day,
+    hour,
+    minute,
+  };
+}
+
 function isSameLocalYear(date: Date, year: number) {
-  return date.getFullYear() === year;
+  const parts = getBerlinDateParts(date);
+  return parts.year === year;
 }
 
 function getDaysInMonth(year: number, monthIndex: number) {
@@ -25,6 +54,7 @@ export async function POST(request: Request) {
   const sourceYearValue = String(formData.get("sourceYear") ?? "").trim();
   const sourceYear = parseYear(sourceYearValue);
   const targetEntityId = String(formData.get("targetEntityId") ?? "").trim();
+  const returnTo = String(formData.get("returnTo") ?? "").trim();
 
   const targetYears = formData
     .getAll("targetYears")
@@ -69,23 +99,23 @@ export async function POST(request: Request) {
 
   for (const targetYear of targetYears) {
     for (const post of filteredSourcePosts) {
-      const originalDate = new Date(post.scheduledAt);
-      const originalMonthIndex = originalDate.getMonth();
-      const originalDay = originalDate.getDate();
-      const maxTargetDay = getDaysInMonth(targetYear, originalMonthIndex);
+      const originalParts = getBerlinDateParts(post.scheduledAt);
+      const maxTargetDay = getDaysInMonth(targetYear, originalParts.monthIndex);
 
-      if (originalDay > maxTargetDay) {
+      if (originalParts.day > maxTargetDay) {
         continue;
       }
 
       const newScheduledAt = new Date(
-        targetYear,
-        originalMonthIndex,
-        originalDay,
-        originalDate.getHours(),
-        originalDate.getMinutes(),
-        0,
-        0
+        Date.UTC(
+          targetYear,
+          originalParts.monthIndex,
+          originalParts.day,
+          originalParts.hour - 1,
+          originalParts.minute,
+          0,
+          0
+        )
       );
 
       const targetAccount =
@@ -108,5 +138,9 @@ export async function POST(request: Request) {
     }
   }
 
-  return Response.redirect(new URL("/", request.url), 303);
+  const redirectUrl = returnTo
+    ? new URL(returnTo, request.url)
+    : new URL("/", request.url);
+
+  return Response.redirect(redirectUrl, 303);
 }

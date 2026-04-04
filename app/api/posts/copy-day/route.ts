@@ -27,10 +27,22 @@ function parseDateParts(value: string) {
 }
 
 function isSameLocalDay(date: Date, year: number, monthIndex: number, day: number) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Berlin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const dateYear = Number(parts.find((part) => part.type === "year")?.value ?? "1970");
+  const dateMonthIndex =
+    Number(parts.find((part) => part.type === "month")?.value ?? "01") - 1;
+  const dateDay = Number(parts.find((part) => part.type === "day")?.value ?? "01");
+
   return (
-    date.getFullYear() === year &&
-    date.getMonth() === monthIndex &&
-    date.getDate() === day
+    dateYear === year &&
+    dateMonthIndex === monthIndex &&
+    dateDay === day
   );
 }
 
@@ -52,14 +64,22 @@ function getSafeTargetDate(
   }
 
   return new Date(
-    targetYear,
-    targetMonthIndex,
-    targetDay,
-    hours,
-    minutes,
-    0,
-    0
+    Date.UTC(targetYear, targetMonthIndex, targetDay, hours - 1, minutes, 0, 0)
   );
+}
+
+function getBerlinTimeParts(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Berlin",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  return {
+    hour: Number(parts.find((part) => part.type === "hour")?.value ?? "00"),
+    minute: Number(parts.find((part) => part.type === "minute")?.value ?? "00"),
+  };
 }
 
 export async function POST(request: Request) {
@@ -68,6 +88,7 @@ export async function POST(request: Request) {
   const sourceEntityId = String(formData.get("sourceEntityId") ?? "").trim();
   const sourceDate = String(formData.get("sourceDate") ?? "").trim();
   const targetEntityId = String(formData.get("targetEntityId") ?? "").trim();
+  const returnTo = String(formData.get("returnTo") ?? "").trim();
 
   const targetDates = formData
     .getAll("targetDates")
@@ -137,13 +158,14 @@ export async function POST(request: Request) {
 
     for (const post of filteredSourcePosts) {
       const originalDate = new Date(post.scheduledAt);
+      const timeParts = getBerlinTimeParts(originalDate);
 
       const newScheduledAt = getSafeTargetDate(
         targetParts.year,
         targetParts.monthIndex,
         targetParts.day,
-        originalDate.getHours(),
-        originalDate.getMinutes()
+        timeParts.hour,
+        timeParts.minute
       );
 
       if (!newScheduledAt) {
@@ -170,5 +192,9 @@ export async function POST(request: Request) {
     }
   }
 
-  return Response.redirect(new URL("/", request.url), 303);
+  const redirectUrl = returnTo
+    ? new URL(returnTo, request.url)
+    : new URL("/", request.url);
+
+  return Response.redirect(redirectUrl, 303);
 }
