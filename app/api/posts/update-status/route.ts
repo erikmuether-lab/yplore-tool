@@ -25,10 +25,12 @@ async function sendPostNow(postId: string) {
   });
 
   if (!post) {
+    console.error("SEND ERROR: Post nicht gefunden", { postId });
     return { error: "Post nicht gefunden.", status: 404 };
   }
 
   if (!canSendToExternalApis()) {
+    console.error("SEND ERROR: ZERNIO_API_URL fehlt");
     await prisma.scheduledPost.update({
       where: { id: postId },
       data: { status: "failed" },
@@ -37,6 +39,7 @@ async function sendPostNow(postId: string) {
   }
 
   if (!post.entity?.apiKey?.trim()) {
+    console.error("SEND ERROR: API-Key fehlt", { postId, entityId: post.entityId });
     await prisma.scheduledPost.update({
       where: { id: postId },
       data: { status: "failed" },
@@ -45,6 +48,10 @@ async function sendPostNow(postId: string) {
   }
 
   if (!post.account?.externalAccountId) {
+    console.error("SEND ERROR: externalAccountId fehlt", {
+      postId,
+      accountId: post.accountId,
+    });
     await prisma.scheduledPost.update({
       where: { id: postId },
       data: { status: "failed" },
@@ -58,6 +65,7 @@ async function sendPostNow(postId: string) {
   const mediaUrl = String(post.publicVideoUrl ?? "").trim();
 
   if (!mediaUrl) {
+    console.error("SEND ERROR: publicVideoUrl fehlt", { postId });
     await prisma.scheduledPost.update({
       where: { id: postId },
       data: { status: "failed" },
@@ -69,6 +77,10 @@ async function sendPostNow(postId: string) {
   }
 
   if (!isPublicVideoUrl(mediaUrl)) {
+    console.error("SEND ERROR: publicVideoUrl nicht öffentlich", {
+      postId,
+      mediaUrl,
+    });
     await prisma.scheduledPost.update({
       where: { id: postId },
       data: { status: "failed" },
@@ -104,6 +116,8 @@ async function sendPostNow(postId: string) {
       ],
     };
 
+    console.log("ZERNIO SEND PAYLOAD:", JSON.stringify(payload, null, 2));
+
     const response = await fetch(`${zernioApiUrl}/posts`, {
       method: "POST",
       headers: {
@@ -114,6 +128,9 @@ async function sendPostNow(postId: string) {
     });
 
     const responseText = await response.text().catch(() => "");
+
+    console.log("ZERNIO STATUS:", response.status);
+    console.log("ZERNIO RESPONSE:", responseText);
 
     if (!response.ok) {
       await prisma.scheduledPost.update({
@@ -134,6 +151,8 @@ async function sendPostNow(postId: string) {
 
     return { success: true, status: 200 };
   } catch (error) {
+    console.error("ZERNIO FETCH ERROR:", error);
+
     await prisma.scheduledPost.update({
       where: { id: postId },
       data: { status: "failed" },
