@@ -1605,7 +1605,7 @@ export default async function Home({
                   <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                     <button
                       type="submit"
-                      formaction="/api/posts/update-status"
+                      formAction="/api/posts/update-status"
                       name="status"
                       value="send-now"
                       style={bulkPrimaryButtonStyle()}
@@ -1615,7 +1615,7 @@ export default async function Home({
 
                     <button
                       type="submit"
-                      formaction="/api/posts/delete"
+                      formAction="/api/posts/delete"
                       style={bulkDangerButtonStyle()}
                     >
                       Auswahl löschen
