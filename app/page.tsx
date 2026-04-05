@@ -94,7 +94,7 @@ async function getPosts() {
       entity: true,
       account: true,
     },
-    take: 5000,
+    take: 100000,
   });
 }
 
