@@ -27,22 +27,11 @@ type SocialAccount = {
   externalAccountId?: string | null;
 };
 
-type DemoEntityPost = {
-  id: string;
-  platform: string;
-  title?: string | null;
-  caption: string;
-  scheduledAt: string | Date;
-  videoFileName?: string | null;
-  status?: string;
-};
-
 type Entity = {
   id: string;
   name: string;
   apiKey: string;
   accounts: SocialAccount[];
-  posts: DemoEntityPost[];
 };
 
 type ApiPost = {
@@ -76,17 +65,22 @@ async function getEntities() {
     },
     include: {
       accounts: true,
-      posts: {
-        orderBy: {
-          scheduledAt: "asc",
-        },
-      },
     },
   });
 }
 
-async function getPosts() {
+async function getPosts(entityId: string, year: number, monthIndex: number) {
+  const start = new Date(year, monthIndex, 1);
+  const end = new Date(year, monthIndex + 1, 1);
+
   return prisma.scheduledPost.findMany({
+    where: {
+      entityId,
+      scheduledAt: {
+        gte: start,
+        lt: end,
+      },
+    },
     orderBy: {
       scheduledAt: "asc",
     },
@@ -94,7 +88,6 @@ async function getPosts() {
       entity: true,
       account: true,
     },
-    take: 100000,
   });
 }
 
@@ -132,8 +125,8 @@ function getBerlinNowInfo() {
   }).formatToParts(now);
 
   const year = parts.find((part) => part.type === "year")?.value ?? "2026";
-  const month = parts.find((part) => part.type === "month")?.value ?? "03";
-  const day = parts.find((part) => part.type === "day")?.value ?? "26";
+  const month = parts.find((part) => part.type === "month")?.value ?? "01";
+  const day = parts.find((part) => part.type === "day")?.value ?? "01";
 
   return {
     year,
@@ -329,6 +322,7 @@ function secondaryButtonStyle() {
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
+    textDecoration: "none",
   } as const;
 }
 
@@ -751,10 +745,9 @@ export default async function Home({
 }: {
   searchParams?: Promise<SearchParams>;
 }) {
-  const entities: Entity[] = await getEntities();
-  const posts: ApiPost[] = await getPosts();
   const resolvedSearchParams = (await searchParams) ?? {};
   const berlinNow = getBerlinNowInfo();
+  const entities: Entity[] = await getEntities();
 
   const entityNames = entities.map((entity) => entity.name);
   const selectedEntityName =
@@ -766,7 +759,7 @@ export default async function Home({
 
   const selectedMonthIndex =
     Number(getSingleValue(resolvedSearchParams.month) ?? berlinNow.monthIndex) ||
-    0;
+    berlinNow.monthIndex;
 
   const rawPlatform = getSingleValue(resolvedSearchParams.platform);
   const selectedPlatformLabel: PlatformOption = isPlatformOption(rawPlatform)
@@ -781,28 +774,25 @@ export default async function Home({
   const selectedEntity =
     entities.find((entity) => entity.name === selectedEntityName) ?? entities[0];
 
+  const posts: ApiPost[] = selectedEntity
+    ? await getPosts(selectedEntity.id, selectedYear, selectedMonthIndex)
+    : [];
+
   const selectedMonthLabel = formatMonthLabelFromIndex(
     selectedMonthIndex,
     selectedYear
   );
 
-  const selectedEntityPosts = posts.filter(
-    (post) => post.entity?.name === selectedEntity?.name
-  );
+  const selectedEntityPosts = posts;
 
   const visiblePosts = selectedEntityPosts
     .filter((post) => {
       const platformLabel = formatPlatformLabel(post.platform);
-      const berlinParts = getBerlinDateParts(post.scheduledAt);
-
       const platformMatches =
         selectedPlatformLabel === "Alle Plattformen" ||
         platformLabel === selectedPlatformLabel;
 
-      const monthMatches = berlinParts.monthIndex === selectedMonthIndex;
-      const yearMatches = berlinParts.year === selectedYear;
-
-      return platformMatches && monthMatches && yearMatches;
+      return platformMatches;
     })
     .sort(
       (a, b) =>
@@ -823,10 +813,8 @@ export default async function Home({
     (post) => post.status === "planned"
   ).length;
 
-  const yearOptions = Array.from(
-    { length: 2030 - Number(berlinNow.year) + 1 },
-    (_, index) => Number(berlinNow.year) + index
-  );
+  const currentYear = Number(berlinNow.year);
+  const yearOptions = Array.from({ length: 2030 - currentYear + 1 }, (_, index) => currentYear + index);
 
   const allMonthOptions = getAllMonthOptions(yearOptions);
   const allYearOptions = getAllYearOptions(yearOptions);
@@ -1594,34 +1582,120 @@ export default async function Home({
             </div>
 
             {visiblePosts.length > 0 ? (
-              <form method="post">
-                <input type="hidden" name="returnTo" value={postsReturnTo} />
+              <>
+                <form method="post" action="/api/posts/update-status">
+                  <input type="hidden" name="status" value="send-now" />
+                  <input type="hidden" name="returnTo" value={postsReturnTo} />
 
-                <div style={bulkBarStyle()}>
-                  <small style={mutedTextStyle()}>
-                    Mehrere Checkboxen auswählen und dann gesammelt ausführen.
-                  </small>
+                  <div style={bulkBarStyle()}>
+                    <small style={mutedTextStyle()}>
+                      Mehrere Checkboxen auswählen und dann gesammelt ausführen.
+                    </small>
 
-                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                    <button
-                      type="submit"
-                      formAction="/api/posts/update-status"
-                      name="status"
-                      value="send-now"
-                      style={bulkPrimaryButtonStyle()}
-                    >
-                      Auswahl jetzt senden
-                    </button>
-
-                    <button
-                      type="submit"
-                      formAction="/api/posts/delete"
-                      style={bulkDangerButtonStyle()}
-                    >
-                      Auswahl löschen
-                    </button>
+                    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                      <button type="submit" style={bulkPrimaryButtonStyle()}>
+                        Auswahl jetzt senden
+                      </button>
+                    </div>
                   </div>
-                </div>
+
+                  <div
+                    style={{
+                      marginTop: "16px",
+                      display: "grid",
+                      gap: "12px",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                    }}
+                  >
+                    {visiblePosts.map((post) => (
+                      <div
+                        key={post.id}
+                        style={{
+                          border: "1px solid #334155",
+                          borderRadius: "16px",
+                          padding: "14px",
+                          background: "#0f172a",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: "10px",
+                            marginBottom: "10px",
+                          }}
+                        >
+                          <label
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "10px",
+                              fontWeight: 700,
+                            }}
+                          >
+                            <input type="checkbox" name="ids" value={post.id} />
+                            <span>{formatPlatformLabel(post.platform)}</span>
+                          </label>
+
+                          <span style={statusBadgeStyle(post.status)}>
+                            {formatStatusLabel(post.status)}
+                          </span>
+                        </div>
+
+                        {post.title ? (
+                          <div
+                            style={{
+                              fontWeight: 700,
+                              color: "#f8fafc",
+                              marginBottom: "6px",
+                            }}
+                          >
+                            {post.title}
+                          </div>
+                        ) : null}
+
+                        <div
+                          style={{
+                            color: "#dbe4ee",
+                            fontSize: "14px",
+                            lineHeight: 1.5,
+                            minHeight: "44px",
+                          }}
+                        >
+                          {post.caption}
+                        </div>
+
+                        <div style={{ ...mutedTextStyle(), marginTop: "10px", fontSize: "13px" }}>
+                          {formatBerlinDateTime(post.scheduledAt)}
+                        </div>
+
+                        {post.videoFileName ? (
+                          <div style={{ ...mutedTextStyle(), marginTop: "6px", fontSize: "13px" }}>
+                            Datei: {post.videoFileName}
+                          </div>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </form>
+
+                <form method="post" action="/api/posts/delete">
+                  <input type="hidden" name="returnTo" value={postsReturnTo} />
+
+                  <div
+                    style={{
+                      marginTop: "16px",
+                      display: "grid",
+                      gap: "12px",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                    }}
+                  >
+                    {visiblePosts.map((post) => (
+                      <input key={post.id} type="hidden" name="ignore-layout" value="" />
+                    ))}
+                  </div>
+                </form>
 
                 <div
                   style={{
@@ -1633,7 +1707,7 @@ export default async function Home({
                 >
                   {visiblePosts.map((post) => (
                     <div
-                      key={post.id}
+                      key={`actions-${post.id}`}
                       style={{
                         border: "1px solid #334155",
                         borderRadius: "16px",
@@ -1641,65 +1715,6 @@ export default async function Home({
                         background: "#0f172a",
                       }}
                     >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          gap: "10px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        <label
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
-                            fontWeight: 700,
-                          }}
-                        >
-                          <input type="checkbox" name="ids" value={post.id} />
-                          <span>{formatPlatformLabel(post.platform)}</span>
-                        </label>
-
-                        <span style={statusBadgeStyle(post.status)}>
-                          {formatStatusLabel(post.status)}
-                        </span>
-                      </div>
-
-                      {post.title ? (
-                        <div
-                          style={{
-                            fontWeight: 700,
-                            color: "#f8fafc",
-                            marginBottom: "6px",
-                          }}
-                        >
-                          {post.title}
-                        </div>
-                      ) : null}
-
-                      <div
-                        style={{
-                          color: "#dbe4ee",
-                          fontSize: "14px",
-                          lineHeight: 1.5,
-                          minHeight: "44px",
-                        }}
-                      >
-                        {post.caption}
-                      </div>
-
-                      <div style={{ ...mutedTextStyle(), marginTop: "10px", fontSize: "13px" }}>
-                        {formatBerlinDateTime(post.scheduledAt)}
-                      </div>
-
-                      {post.videoFileName ? (
-                        <div style={{ ...mutedTextStyle(), marginTop: "6px", fontSize: "13px" }}>
-                          Datei: {post.videoFileName}
-                        </div>
-                      ) : null}
-
                       <div
                         style={{
                           marginTop: "14px",
@@ -1759,7 +1774,7 @@ export default async function Home({
                     </div>
                   ))}
                 </div>
-              </form>
+              </>
             ) : (
               <div style={{ marginTop: "16px" }}>
                 <div style={softCardStyle()}>

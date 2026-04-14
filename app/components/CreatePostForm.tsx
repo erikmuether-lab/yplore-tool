@@ -31,7 +31,7 @@ export default function CreatePostForm({
 
     const entityId = String(formData.get("entityId") ?? "").trim();
     const title = String(formData.get("title") ?? "").trim();
-    const platform = String(formData.get("platform") ?? "").trim();
+    const platform = String(formData.get("platform") ?? "").trim().toLowerCase();
     const date = String(formData.get("date") ?? "").trim();
     const time = String(formData.get("time") ?? "").trim();
     const caption = String(formData.get("caption") ?? "").trim();
@@ -47,7 +47,7 @@ export default function CreatePostForm({
 
     let publicVideoUrl = manualPublicVideoUrl;
     let videoFileName = "";
-    let localVideoUrl = "";
+    let videoUrl = manualPublicVideoUrl;
 
     try {
       setIsUploading(true);
@@ -66,10 +66,10 @@ export default function CreatePostForm({
           }),
         });
 
-        const presignData = await presignResponse.json();
+        const presignData = await presignResponse.json().catch(() => null);
 
-        if (!presignResponse.ok || !presignData.uploadUrl || !presignData.publicUrl) {
-          throw new Error(presignData.error || "Presign fehlgeschlagen.");
+        if (!presignResponse.ok || !presignData?.uploadUrl || !presignData?.publicUrl) {
+          throw new Error(presignData?.error || "Presign fehlgeschlagen.");
         }
 
         const uploadResponse = await fetch(presignData.uploadUrl, {
@@ -86,7 +86,7 @@ export default function CreatePostForm({
 
         publicVideoUrl = presignData.publicUrl;
         videoFileName = file.name;
-        localVideoUrl = presignData.publicUrl;
+        videoUrl = presignData.publicUrl;
       }
 
       if (!publicVideoUrl) {
@@ -99,24 +99,6 @@ export default function CreatePostForm({
 
       const scheduledAt = new Date(`${date}T${time}:00`);
 
-            alert(
-            JSON.stringify(
-                {
-                date,
-                time,
-                scheduledAtLocal: scheduledAt.toString(),
-                scheduledAtIso: scheduledAt.toISOString(),
-                },
-                null,
-                2
-            )
-            );
-            
-        console.log("date", date);
-        console.log("time", time);
-        console.log("scheduledAt local", scheduledAt);
-        console.log("scheduledAt iso", scheduledAt.toISOString());
-
       const createResponse = await fetch("/api/posts", {
         method: "POST",
         headers: {
@@ -127,7 +109,7 @@ export default function CreatePostForm({
           platform,
           title,
           caption,
-          videoUrl: localVideoUrl || publicVideoUrl,
+          videoUrl,
           publicVideoUrl,
           videoFileName: videoFileName || null,
           scheduledAt: scheduledAt.toISOString(),
@@ -429,28 +411,6 @@ export default function CreatePostForm({
           }}
         >
           {submitText}
-        </button>
-
-        <button
-          type="button"
-          disabled={isUploading}
-          style={{
-            minWidth: "176px",
-            minHeight: "44px",
-            padding: "10px 16px",
-            borderRadius: "12px",
-            border: "1px solid #475569",
-            background: "#1e293b",
-            color: "#f8fafc",
-            cursor: isUploading ? "not-allowed" : "pointer",
-            fontWeight: 700,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: isUploading ? 0.7 : 1,
-          }}
-        >
-          Als Entwurf speichern
         </button>
       </div>
     </form>
