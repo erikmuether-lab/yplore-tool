@@ -1,5 +1,4 @@
 import { prisma } from "@/src/lib/prisma";
-import { uploadToYouTube } from "@/src/lib/youtube";
 
 type SendResult = {
   success: boolean;
@@ -27,7 +26,10 @@ function isPublicVideoUrl(videoUrl: string) {
 }
 
 async function sendToYoutube(postId: string): Promise<SendResult> {
-  return uploadToYouTube({ postId });
+  return {
+    success: false,
+    error: "YouTube Publisher noch nicht eingerichtet.",
+  };
 }
 
 async function sendToInstagram(): Promise<SendResult> {
@@ -53,10 +55,10 @@ async function sendToTikTok(post: {
 
   const videoUrl = String(post.publicVideoUrl ?? "").trim();
 
-  if (!videoUrl) {
+  if (!videoUrl || !isPublicVideoUrl(videoUrl)) {
     return {
       success: false,
-      error: "Video URL fehlt.",
+      error: "Video URL fehlt oder ungültig.",
     };
   }
 
@@ -90,7 +92,7 @@ async function sendToTikTok(post: {
     if (!response.ok) {
       return {
         success: false,
-        error: `TikTok Init Fehler: ${JSON.stringify(data)}`,
+        error: `TikTok Fehler: ${JSON.stringify(data)}`,
       };
     }
 
@@ -116,6 +118,11 @@ async function sendToTikTok(post: {
 async function sendViaPlatform(post: {
   id: string;
   platform: string;
+  caption: string;
+  publicVideoUrl?: string | null;
+  account?: {
+    accessToken?: string | null;
+  } | null;
 }): Promise<SendResult> {
   if (post.platform === "youtube") {
     return sendToYoutube(post.id);
@@ -148,47 +155,27 @@ async function sendPostNow(postId: string): Promise<SendResult> {
     return { success: false, error: "Post nicht gefunden." };
   }
 
-  const mediaUrl = String(post.publicVideoUrl ?? "").trim();
-
-  if (!mediaUrl || !isPublicVideoUrl(mediaUrl)) {
-    await prisma.scheduledPost.update({
-      where: { id: postId },
-      data: { status: "failed" },
-    });
-
-    return {
-      success: false,
-      error: "publicVideoUrl fehlt oder ist ungültig.",
-    };
-  }
-
   await prisma.scheduledPost.update({
     where: { id: postId },
     data: { status: "sending" },
   });
 
-  try {
-    const result = await sendViaPlatform(post);
+  const result = await sendViaPlatform({
+    id: post.id,
+    platform: post.platform,
+    caption: post.caption,
+    publicVideoUrl: post.publicVideoUrl,
+    account: post.account,
+  });
 
-    await prisma.scheduledPost.update({
-      where: { id: postId },
-      data: {
-        status: result.success ? "sent" : "failed",
-      },
-    });
+  await prisma.scheduledPost.update({
+    where: { id: postId },
+    data: {
+      status: result.success ? "sent" : "failed",
+    },
+  });
 
-    return result;
-  } catch (error) {
-    await prisma.scheduledPost.update({
-      where: { id: postId },
-      data: { status: "failed" },
-    });
-
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unbekannter Fehler",
-    };
-  }
+  return result;
 }
 
 export async function GET(request: Request) {
