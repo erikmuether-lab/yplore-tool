@@ -30,6 +30,15 @@ export type SocialAccountMinAggregateOutputType = {
   platform: string | null
   handle: string | null
   externalAccountId: string | null
+  accessToken: string | null
+  refreshToken: string | null
+  tokenType: string | null
+  tokenExpiresAt: Date | null
+  scope: string | null
+  platformUserId: string | null
+  username: string | null
+  isActive: boolean | null
+  lastError: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -40,6 +49,15 @@ export type SocialAccountMaxAggregateOutputType = {
   platform: string | null
   handle: string | null
   externalAccountId: string | null
+  accessToken: string | null
+  refreshToken: string | null
+  tokenType: string | null
+  tokenExpiresAt: Date | null
+  scope: string | null
+  platformUserId: string | null
+  username: string | null
+  isActive: boolean | null
+  lastError: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +68,15 @@ export type SocialAccountCountAggregateOutputType = {
   platform: number
   handle: number
   externalAccountId: number
+  accessToken: number
+  refreshToken: number
+  tokenType: number
+  tokenExpiresAt: number
+  scope: number
+  platformUserId: number
+  username: number
+  isActive: number
+  lastError: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -62,6 +89,15 @@ export type SocialAccountMinAggregateInputType = {
   platform?: true
   handle?: true
   externalAccountId?: true
+  accessToken?: true
+  refreshToken?: true
+  tokenType?: true
+  tokenExpiresAt?: true
+  scope?: true
+  platformUserId?: true
+  username?: true
+  isActive?: true
+  lastError?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -72,6 +108,15 @@ export type SocialAccountMaxAggregateInputType = {
   platform?: true
   handle?: true
   externalAccountId?: true
+  accessToken?: true
+  refreshToken?: true
+  tokenType?: true
+  tokenExpiresAt?: true
+  scope?: true
+  platformUserId?: true
+  username?: true
+  isActive?: true
+  lastError?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +127,15 @@ export type SocialAccountCountAggregateInputType = {
   platform?: true
   handle?: true
   externalAccountId?: true
+  accessToken?: true
+  refreshToken?: true
+  tokenType?: true
+  tokenExpiresAt?: true
+  scope?: true
+  platformUserId?: true
+  username?: true
+  isActive?: true
+  lastError?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -165,6 +219,15 @@ export type SocialAccountGroupByOutputType = {
   platform: string
   handle: string
   externalAccountId: string | null
+  accessToken: string | null
+  refreshToken: string | null
+  tokenType: string | null
+  tokenExpiresAt: Date | null
+  scope: string | null
+  platformUserId: string | null
+  username: string | null
+  isActive: boolean
+  lastError: string | null
   createdAt: Date
   updatedAt: Date
   _count: SocialAccountCountAggregateOutputType | null
@@ -196,6 +259,15 @@ export type SocialAccountWhereInput = {
   platform?: Prisma.StringFilter<"SocialAccount"> | string
   handle?: Prisma.StringFilter<"SocialAccount"> | string
   externalAccountId?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  accessToken?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  refreshToken?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  tokenType?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  tokenExpiresAt?: Prisma.DateTimeNullableFilter<"SocialAccount"> | Date | string | null
+  scope?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  platformUserId?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  username?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  isActive?: Prisma.BoolFilter<"SocialAccount"> | boolean
+  lastError?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SocialAccount"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SocialAccount"> | Date | string
   posts?: Prisma.ScheduledPostListRelationFilter
@@ -208,6 +280,15 @@ export type SocialAccountOrderByWithRelationInput = {
   platform?: Prisma.SortOrder
   handle?: Prisma.SortOrder
   externalAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
+  accessToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  refreshToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  tokenType?: Prisma.SortOrderInput | Prisma.SortOrder
+  tokenExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  scope?: Prisma.SortOrderInput | Prisma.SortOrder
+  platformUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  username?: Prisma.SortOrderInput | Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  lastError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   posts?: Prisma.ScheduledPostOrderByRelationAggregateInput
@@ -223,6 +304,15 @@ export type SocialAccountWhereUniqueInput = Prisma.AtLeast<{
   platform?: Prisma.StringFilter<"SocialAccount"> | string
   handle?: Prisma.StringFilter<"SocialAccount"> | string
   externalAccountId?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  accessToken?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  refreshToken?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  tokenType?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  tokenExpiresAt?: Prisma.DateTimeNullableFilter<"SocialAccount"> | Date | string | null
+  scope?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  platformUserId?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  username?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  isActive?: Prisma.BoolFilter<"SocialAccount"> | boolean
+  lastError?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SocialAccount"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SocialAccount"> | Date | string
   posts?: Prisma.ScheduledPostListRelationFilter
@@ -235,6 +325,15 @@ export type SocialAccountOrderByWithAggregationInput = {
   platform?: Prisma.SortOrder
   handle?: Prisma.SortOrder
   externalAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
+  accessToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  refreshToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  tokenType?: Prisma.SortOrderInput | Prisma.SortOrder
+  tokenExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  scope?: Prisma.SortOrderInput | Prisma.SortOrder
+  platformUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  username?: Prisma.SortOrderInput | Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  lastError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SocialAccountCountOrderByAggregateInput
@@ -251,6 +350,15 @@ export type SocialAccountScalarWhereWithAggregatesInput = {
   platform?: Prisma.StringWithAggregatesFilter<"SocialAccount"> | string
   handle?: Prisma.StringWithAggregatesFilter<"SocialAccount"> | string
   externalAccountId?: Prisma.StringNullableWithAggregatesFilter<"SocialAccount"> | string | null
+  accessToken?: Prisma.StringNullableWithAggregatesFilter<"SocialAccount"> | string | null
+  refreshToken?: Prisma.StringNullableWithAggregatesFilter<"SocialAccount"> | string | null
+  tokenType?: Prisma.StringNullableWithAggregatesFilter<"SocialAccount"> | string | null
+  tokenExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SocialAccount"> | Date | string | null
+  scope?: Prisma.StringNullableWithAggregatesFilter<"SocialAccount"> | string | null
+  platformUserId?: Prisma.StringNullableWithAggregatesFilter<"SocialAccount"> | string | null
+  username?: Prisma.StringNullableWithAggregatesFilter<"SocialAccount"> | string | null
+  isActive?: Prisma.BoolWithAggregatesFilter<"SocialAccount"> | boolean
+  lastError?: Prisma.StringNullableWithAggregatesFilter<"SocialAccount"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SocialAccount"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"SocialAccount"> | Date | string
 }
@@ -260,6 +368,15 @@ export type SocialAccountCreateInput = {
   platform: string
   handle: string
   externalAccountId?: string | null
+  accessToken?: string | null
+  refreshToken?: string | null
+  tokenType?: string | null
+  tokenExpiresAt?: Date | string | null
+  scope?: string | null
+  platformUserId?: string | null
+  username?: string | null
+  isActive?: boolean
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   posts?: Prisma.ScheduledPostCreateNestedManyWithoutAccountInput
@@ -272,6 +389,15 @@ export type SocialAccountUncheckedCreateInput = {
   platform: string
   handle: string
   externalAccountId?: string | null
+  accessToken?: string | null
+  refreshToken?: string | null
+  tokenType?: string | null
+  tokenExpiresAt?: Date | string | null
+  scope?: string | null
+  platformUserId?: string | null
+  username?: string | null
+  isActive?: boolean
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   posts?: Prisma.ScheduledPostUncheckedCreateNestedManyWithoutAccountInput
@@ -282,6 +408,15 @@ export type SocialAccountUpdateInput = {
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   handle?: Prisma.StringFieldUpdateOperationsInput | string
   externalAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scope?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   posts?: Prisma.ScheduledPostUpdateManyWithoutAccountNestedInput
@@ -294,6 +429,15 @@ export type SocialAccountUncheckedUpdateInput = {
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   handle?: Prisma.StringFieldUpdateOperationsInput | string
   externalAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scope?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   posts?: Prisma.ScheduledPostUncheckedUpdateManyWithoutAccountNestedInput
@@ -305,6 +449,15 @@ export type SocialAccountCreateManyInput = {
   platform: string
   handle: string
   externalAccountId?: string | null
+  accessToken?: string | null
+  refreshToken?: string | null
+  tokenType?: string | null
+  tokenExpiresAt?: Date | string | null
+  scope?: string | null
+  platformUserId?: string | null
+  username?: string | null
+  isActive?: boolean
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -314,6 +467,15 @@ export type SocialAccountUpdateManyMutationInput = {
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   handle?: Prisma.StringFieldUpdateOperationsInput | string
   externalAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scope?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -324,6 +486,15 @@ export type SocialAccountUncheckedUpdateManyInput = {
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   handle?: Prisma.StringFieldUpdateOperationsInput | string
   externalAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scope?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -344,6 +515,15 @@ export type SocialAccountCountOrderByAggregateInput = {
   platform?: Prisma.SortOrder
   handle?: Prisma.SortOrder
   externalAccountId?: Prisma.SortOrder
+  accessToken?: Prisma.SortOrder
+  refreshToken?: Prisma.SortOrder
+  tokenType?: Prisma.SortOrder
+  tokenExpiresAt?: Prisma.SortOrder
+  scope?: Prisma.SortOrder
+  platformUserId?: Prisma.SortOrder
+  username?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -354,6 +534,15 @@ export type SocialAccountMaxOrderByAggregateInput = {
   platform?: Prisma.SortOrder
   handle?: Prisma.SortOrder
   externalAccountId?: Prisma.SortOrder
+  accessToken?: Prisma.SortOrder
+  refreshToken?: Prisma.SortOrder
+  tokenType?: Prisma.SortOrder
+  tokenExpiresAt?: Prisma.SortOrder
+  scope?: Prisma.SortOrder
+  platformUserId?: Prisma.SortOrder
+  username?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -364,6 +553,15 @@ export type SocialAccountMinOrderByAggregateInput = {
   platform?: Prisma.SortOrder
   handle?: Prisma.SortOrder
   externalAccountId?: Prisma.SortOrder
+  accessToken?: Prisma.SortOrder
+  refreshToken?: Prisma.SortOrder
+  tokenType?: Prisma.SortOrder
+  tokenExpiresAt?: Prisma.SortOrder
+  scope?: Prisma.SortOrder
+  platformUserId?: Prisma.SortOrder
+  username?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -415,8 +613,12 @@ export type SocialAccountUncheckedUpdateManyWithoutEntityNestedInput = {
   deleteMany?: Prisma.SocialAccountScalarWhereInput | Prisma.SocialAccountScalarWhereInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type SocialAccountCreateNestedOneWithoutPostsInput = {
@@ -440,6 +642,15 @@ export type SocialAccountCreateWithoutEntityInput = {
   platform: string
   handle: string
   externalAccountId?: string | null
+  accessToken?: string | null
+  refreshToken?: string | null
+  tokenType?: string | null
+  tokenExpiresAt?: Date | string | null
+  scope?: string | null
+  platformUserId?: string | null
+  username?: string | null
+  isActive?: boolean
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   posts?: Prisma.ScheduledPostCreateNestedManyWithoutAccountInput
@@ -450,6 +661,15 @@ export type SocialAccountUncheckedCreateWithoutEntityInput = {
   platform: string
   handle: string
   externalAccountId?: string | null
+  accessToken?: string | null
+  refreshToken?: string | null
+  tokenType?: string | null
+  tokenExpiresAt?: Date | string | null
+  scope?: string | null
+  platformUserId?: string | null
+  username?: string | null
+  isActive?: boolean
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   posts?: Prisma.ScheduledPostUncheckedCreateNestedManyWithoutAccountInput
@@ -490,6 +710,15 @@ export type SocialAccountScalarWhereInput = {
   platform?: Prisma.StringFilter<"SocialAccount"> | string
   handle?: Prisma.StringFilter<"SocialAccount"> | string
   externalAccountId?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  accessToken?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  refreshToken?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  tokenType?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  tokenExpiresAt?: Prisma.DateTimeNullableFilter<"SocialAccount"> | Date | string | null
+  scope?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  platformUserId?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  username?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
+  isActive?: Prisma.BoolFilter<"SocialAccount"> | boolean
+  lastError?: Prisma.StringNullableFilter<"SocialAccount"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SocialAccount"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SocialAccount"> | Date | string
 }
@@ -499,6 +728,15 @@ export type SocialAccountCreateWithoutPostsInput = {
   platform: string
   handle: string
   externalAccountId?: string | null
+  accessToken?: string | null
+  refreshToken?: string | null
+  tokenType?: string | null
+  tokenExpiresAt?: Date | string | null
+  scope?: string | null
+  platformUserId?: string | null
+  username?: string | null
+  isActive?: boolean
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   entity: Prisma.EntityCreateNestedOneWithoutAccountsInput
@@ -510,6 +748,15 @@ export type SocialAccountUncheckedCreateWithoutPostsInput = {
   platform: string
   handle: string
   externalAccountId?: string | null
+  accessToken?: string | null
+  refreshToken?: string | null
+  tokenType?: string | null
+  tokenExpiresAt?: Date | string | null
+  scope?: string | null
+  platformUserId?: string | null
+  username?: string | null
+  isActive?: boolean
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -535,6 +782,15 @@ export type SocialAccountUpdateWithoutPostsInput = {
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   handle?: Prisma.StringFieldUpdateOperationsInput | string
   externalAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scope?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   entity?: Prisma.EntityUpdateOneRequiredWithoutAccountsNestedInput
@@ -546,6 +802,15 @@ export type SocialAccountUncheckedUpdateWithoutPostsInput = {
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   handle?: Prisma.StringFieldUpdateOperationsInput | string
   externalAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scope?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -555,6 +820,15 @@ export type SocialAccountCreateManyEntityInput = {
   platform: string
   handle: string
   externalAccountId?: string | null
+  accessToken?: string | null
+  refreshToken?: string | null
+  tokenType?: string | null
+  tokenExpiresAt?: Date | string | null
+  scope?: string | null
+  platformUserId?: string | null
+  username?: string | null
+  isActive?: boolean
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -564,6 +838,15 @@ export type SocialAccountUpdateWithoutEntityInput = {
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   handle?: Prisma.StringFieldUpdateOperationsInput | string
   externalAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scope?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   posts?: Prisma.ScheduledPostUpdateManyWithoutAccountNestedInput
@@ -574,6 +857,15 @@ export type SocialAccountUncheckedUpdateWithoutEntityInput = {
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   handle?: Prisma.StringFieldUpdateOperationsInput | string
   externalAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scope?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   posts?: Prisma.ScheduledPostUncheckedUpdateManyWithoutAccountNestedInput
@@ -584,6 +876,15 @@ export type SocialAccountUncheckedUpdateManyWithoutEntityInput = {
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   handle?: Prisma.StringFieldUpdateOperationsInput | string
   externalAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scope?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -625,6 +926,15 @@ export type SocialAccountSelect<ExtArgs extends runtime.Types.Extensions.Interna
   platform?: boolean
   handle?: boolean
   externalAccountId?: boolean
+  accessToken?: boolean
+  refreshToken?: boolean
+  tokenType?: boolean
+  tokenExpiresAt?: boolean
+  scope?: boolean
+  platformUserId?: boolean
+  username?: boolean
+  isActive?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   posts?: boolean | Prisma.SocialAccount$postsArgs<ExtArgs>
@@ -638,6 +948,15 @@ export type SocialAccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   platform?: boolean
   handle?: boolean
   externalAccountId?: boolean
+  accessToken?: boolean
+  refreshToken?: boolean
+  tokenType?: boolean
+  tokenExpiresAt?: boolean
+  scope?: boolean
+  platformUserId?: boolean
+  username?: boolean
+  isActive?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   entity?: boolean | Prisma.EntityDefaultArgs<ExtArgs>
@@ -649,6 +968,15 @@ export type SocialAccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   platform?: boolean
   handle?: boolean
   externalAccountId?: boolean
+  accessToken?: boolean
+  refreshToken?: boolean
+  tokenType?: boolean
+  tokenExpiresAt?: boolean
+  scope?: boolean
+  platformUserId?: boolean
+  username?: boolean
+  isActive?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   entity?: boolean | Prisma.EntityDefaultArgs<ExtArgs>
@@ -660,11 +988,20 @@ export type SocialAccountSelectScalar = {
   platform?: boolean
   handle?: boolean
   externalAccountId?: boolean
+  accessToken?: boolean
+  refreshToken?: boolean
+  tokenType?: boolean
+  tokenExpiresAt?: boolean
+  scope?: boolean
+  platformUserId?: boolean
+  username?: boolean
+  isActive?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SocialAccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "entityId" | "platform" | "handle" | "externalAccountId" | "createdAt" | "updatedAt", ExtArgs["result"]["socialAccount"]>
+export type SocialAccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "entityId" | "platform" | "handle" | "externalAccountId" | "accessToken" | "refreshToken" | "tokenType" | "tokenExpiresAt" | "scope" | "platformUserId" | "username" | "isActive" | "lastError" | "createdAt" | "updatedAt", ExtArgs["result"]["socialAccount"]>
 export type SocialAccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   posts?: boolean | Prisma.SocialAccount$postsArgs<ExtArgs>
   entity?: boolean | Prisma.EntityDefaultArgs<ExtArgs>
@@ -689,6 +1026,15 @@ export type $SocialAccountPayload<ExtArgs extends runtime.Types.Extensions.Inter
     platform: string
     handle: string
     externalAccountId: string | null
+    accessToken: string | null
+    refreshToken: string | null
+    tokenType: string | null
+    tokenExpiresAt: Date | null
+    scope: string | null
+    platformUserId: string | null
+    username: string | null
+    isActive: boolean
+    lastError: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["socialAccount"]>
@@ -1121,6 +1467,15 @@ export interface SocialAccountFieldRefs {
   readonly platform: Prisma.FieldRef<"SocialAccount", 'String'>
   readonly handle: Prisma.FieldRef<"SocialAccount", 'String'>
   readonly externalAccountId: Prisma.FieldRef<"SocialAccount", 'String'>
+  readonly accessToken: Prisma.FieldRef<"SocialAccount", 'String'>
+  readonly refreshToken: Prisma.FieldRef<"SocialAccount", 'String'>
+  readonly tokenType: Prisma.FieldRef<"SocialAccount", 'String'>
+  readonly tokenExpiresAt: Prisma.FieldRef<"SocialAccount", 'DateTime'>
+  readonly scope: Prisma.FieldRef<"SocialAccount", 'String'>
+  readonly platformUserId: Prisma.FieldRef<"SocialAccount", 'String'>
+  readonly username: Prisma.FieldRef<"SocialAccount", 'String'>
+  readonly isActive: Prisma.FieldRef<"SocialAccount", 'Boolean'>
+  readonly lastError: Prisma.FieldRef<"SocialAccount", 'String'>
   readonly createdAt: Prisma.FieldRef<"SocialAccount", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"SocialAccount", 'DateTime'>
 }

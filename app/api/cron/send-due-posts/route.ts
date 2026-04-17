@@ -1,4 +1,5 @@
 import { prisma } from "@/src/lib/prisma";
+import { uploadToYouTube } from "@/src/lib/youtube";
 
 type SendResult = {
   success: boolean;
@@ -25,11 +26,8 @@ function isPublicVideoUrl(videoUrl: string) {
   return /^https?:\/\//i.test(videoUrl);
 }
 
-async function sendToYoutube(): Promise<SendResult> {
-  return {
-    success: false,
-    error: "YouTube Publisher noch nicht eingerichtet.",
-  };
+async function sendToYoutube(postId: string): Promise<SendResult> {
+  return uploadToYouTube({ postId });
 }
 
 async function sendToInstagram(): Promise<SendResult> {
@@ -47,10 +45,11 @@ async function sendToTikTok(): Promise<SendResult> {
 }
 
 async function sendViaPlatform(post: {
+  id: string;
   platform: string;
 }): Promise<SendResult> {
   if (post.platform === "youtube") {
-    return sendToYoutube();
+    return sendToYoutube(post.id);
   }
 
   if (post.platform === "instagram") {

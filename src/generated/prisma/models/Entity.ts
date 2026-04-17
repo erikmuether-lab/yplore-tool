@@ -150,7 +150,7 @@ export type EntityGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 export type EntityGroupByOutputType = {
   id: string
   name: string
-  apiKey: string
+  apiKey: string | null
   createdAt: Date
   updatedAt: Date
   _count: EntityCountAggregateOutputType | null
@@ -179,7 +179,7 @@ export type EntityWhereInput = {
   NOT?: Prisma.EntityWhereInput | Prisma.EntityWhereInput[]
   id?: Prisma.StringFilter<"Entity"> | string
   name?: Prisma.StringFilter<"Entity"> | string
-  apiKey?: Prisma.StringFilter<"Entity"> | string
+  apiKey?: Prisma.StringNullableFilter<"Entity"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Entity"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Entity"> | Date | string
   posts?: Prisma.ScheduledPostListRelationFilter
@@ -190,7 +190,7 @@ export type EntityWhereInput = {
 export type EntityOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  apiKey?: Prisma.SortOrder
+  apiKey?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   posts?: Prisma.ScheduledPostOrderByRelationAggregateInput
@@ -204,7 +204,7 @@ export type EntityWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.EntityWhereInput[]
   NOT?: Prisma.EntityWhereInput | Prisma.EntityWhereInput[]
   name?: Prisma.StringFilter<"Entity"> | string
-  apiKey?: Prisma.StringFilter<"Entity"> | string
+  apiKey?: Prisma.StringNullableFilter<"Entity"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Entity"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Entity"> | Date | string
   posts?: Prisma.ScheduledPostListRelationFilter
@@ -215,7 +215,7 @@ export type EntityWhereUniqueInput = Prisma.AtLeast<{
 export type EntityOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  apiKey?: Prisma.SortOrder
+  apiKey?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.EntityCountOrderByAggregateInput
@@ -229,7 +229,7 @@ export type EntityScalarWhereWithAggregatesInput = {
   NOT?: Prisma.EntityScalarWhereWithAggregatesInput | Prisma.EntityScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Entity"> | string
   name?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  apiKey?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  apiKey?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Entity"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Entity"> | Date | string
 }
@@ -237,7 +237,7 @@ export type EntityScalarWhereWithAggregatesInput = {
 export type EntityCreateInput = {
   id?: string
   name: string
-  apiKey: string
+  apiKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   posts?: Prisma.ScheduledPostCreateNestedManyWithoutEntityInput
@@ -248,7 +248,7 @@ export type EntityCreateInput = {
 export type EntityUncheckedCreateInput = {
   id?: string
   name: string
-  apiKey: string
+  apiKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   posts?: Prisma.ScheduledPostUncheckedCreateNestedManyWithoutEntityInput
@@ -259,7 +259,7 @@ export type EntityUncheckedCreateInput = {
 export type EntityUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   posts?: Prisma.ScheduledPostUpdateManyWithoutEntityNestedInput
@@ -270,7 +270,7 @@ export type EntityUpdateInput = {
 export type EntityUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   posts?: Prisma.ScheduledPostUncheckedUpdateManyWithoutEntityNestedInput
@@ -281,7 +281,7 @@ export type EntityUncheckedUpdateInput = {
 export type EntityCreateManyInput = {
   id?: string
   name: string
-  apiKey: string
+  apiKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -289,7 +289,7 @@ export type EntityCreateManyInput = {
 export type EntityUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -297,7 +297,7 @@ export type EntityUpdateManyMutationInput = {
 export type EntityUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -333,6 +333,10 @@ export type EntityScalarRelationFilter = {
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -384,7 +388,7 @@ export type EntityUpdateOneRequiredWithoutBatchesNestedInput = {
 export type EntityCreateWithoutAccountsInput = {
   id?: string
   name: string
-  apiKey: string
+  apiKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   posts?: Prisma.ScheduledPostCreateNestedManyWithoutEntityInput
@@ -394,7 +398,7 @@ export type EntityCreateWithoutAccountsInput = {
 export type EntityUncheckedCreateWithoutAccountsInput = {
   id?: string
   name: string
-  apiKey: string
+  apiKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   posts?: Prisma.ScheduledPostUncheckedCreateNestedManyWithoutEntityInput
@@ -420,7 +424,7 @@ export type EntityUpdateToOneWithWhereWithoutAccountsInput = {
 export type EntityUpdateWithoutAccountsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   posts?: Prisma.ScheduledPostUpdateManyWithoutEntityNestedInput
@@ -430,7 +434,7 @@ export type EntityUpdateWithoutAccountsInput = {
 export type EntityUncheckedUpdateWithoutAccountsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   posts?: Prisma.ScheduledPostUncheckedUpdateManyWithoutEntityNestedInput
@@ -440,7 +444,7 @@ export type EntityUncheckedUpdateWithoutAccountsInput = {
 export type EntityCreateWithoutPostsInput = {
   id?: string
   name: string
-  apiKey: string
+  apiKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   batches?: Prisma.UploadBatchCreateNestedManyWithoutEntityInput
@@ -450,7 +454,7 @@ export type EntityCreateWithoutPostsInput = {
 export type EntityUncheckedCreateWithoutPostsInput = {
   id?: string
   name: string
-  apiKey: string
+  apiKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   batches?: Prisma.UploadBatchUncheckedCreateNestedManyWithoutEntityInput
@@ -476,7 +480,7 @@ export type EntityUpdateToOneWithWhereWithoutPostsInput = {
 export type EntityUpdateWithoutPostsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batches?: Prisma.UploadBatchUpdateManyWithoutEntityNestedInput
@@ -486,7 +490,7 @@ export type EntityUpdateWithoutPostsInput = {
 export type EntityUncheckedUpdateWithoutPostsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batches?: Prisma.UploadBatchUncheckedUpdateManyWithoutEntityNestedInput
@@ -496,7 +500,7 @@ export type EntityUncheckedUpdateWithoutPostsInput = {
 export type EntityCreateWithoutBatchesInput = {
   id?: string
   name: string
-  apiKey: string
+  apiKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   posts?: Prisma.ScheduledPostCreateNestedManyWithoutEntityInput
@@ -506,7 +510,7 @@ export type EntityCreateWithoutBatchesInput = {
 export type EntityUncheckedCreateWithoutBatchesInput = {
   id?: string
   name: string
-  apiKey: string
+  apiKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   posts?: Prisma.ScheduledPostUncheckedCreateNestedManyWithoutEntityInput
@@ -532,7 +536,7 @@ export type EntityUpdateToOneWithWhereWithoutBatchesInput = {
 export type EntityUpdateWithoutBatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   posts?: Prisma.ScheduledPostUpdateManyWithoutEntityNestedInput
@@ -542,7 +546,7 @@ export type EntityUpdateWithoutBatchesInput = {
 export type EntityUncheckedUpdateWithoutBatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   posts?: Prisma.ScheduledPostUncheckedUpdateManyWithoutEntityNestedInput
@@ -654,7 +658,7 @@ export type $EntityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
-    apiKey: string
+    apiKey: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["entity"]>

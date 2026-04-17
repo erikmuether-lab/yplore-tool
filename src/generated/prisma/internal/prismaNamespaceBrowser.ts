@@ -91,6 +91,15 @@ export const SocialAccountScalarFieldEnum = {
   platform: 'platform',
   handle: 'handle',
   externalAccountId: 'externalAccountId',
+  accessToken: 'accessToken',
+  refreshToken: 'refreshToken',
+  tokenType: 'tokenType',
+  tokenExpiresAt: 'tokenExpiresAt',
+  scope: 'scope',
+  platformUserId: 'platformUserId',
+  username: 'username',
+  isActive: 'isActive',
+  lastError: 'lastError',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
