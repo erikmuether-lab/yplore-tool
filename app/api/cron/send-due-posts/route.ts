@@ -37,11 +37,80 @@ async function sendToInstagram(): Promise<SendResult> {
   };
 }
 
-async function sendToTikTok(): Promise<SendResult> {
-  return {
-    success: false,
-    error: "TikTok Publisher noch nicht eingerichtet.",
-  };
+async function sendToTikTok(post: {
+  account?: {
+    accessToken?: string | null;
+  } | null;
+  caption: string;
+  publicVideoUrl?: string | null;
+}): Promise<SendResult> {
+  if (!post.account?.accessToken) {
+    return {
+      success: false,
+      error: "Kein TikTok Access Token vorhanden.",
+    };
+  }
+
+  const videoUrl = String(post.publicVideoUrl ?? "").trim();
+
+  if (!videoUrl) {
+    return {
+      success: false,
+      error: "Video URL fehlt.",
+    };
+  }
+
+  try {
+    const response = await fetch(
+      "https://open.tiktokapis.com/v2/post/publish/video/init/",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${post.account.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          post_info: {
+            title: post.caption || "",
+            privacy_level: "PUBLIC",
+            disable_duet: false,
+            disable_comment: false,
+            disable_stitch: false,
+          },
+          source_info: {
+            source: "PULL_FROM_URL",
+            video_url: videoUrl,
+          },
+        }),
+      }
+    );
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: `TikTok Init Fehler: ${JSON.stringify(data)}`,
+      };
+    }
+
+    const publishId = data?.data?.publish_id;
+
+    if (!publishId) {
+      return {
+        success: false,
+        error: "Kein publish_id erhalten.",
+      };
+    }
+
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Unbekannter TikTok Fehler",
+    };
+  }
 }
 
 async function sendViaPlatform(post: {
@@ -57,7 +126,7 @@ async function sendViaPlatform(post: {
   }
 
   if (post.platform === "tiktok") {
-    return sendToTikTok();
+    return sendToTikTok(post);
   }
 
   return {
