@@ -8,31 +8,44 @@ datasource db {
 }
 
 model Entity {
-  id        String     @id @default(cuid())
+  id        String          @id @default(cuid())
   name      String
-  apiKey    String
+  apiKey    String?
   posts     ScheduledPost[]
   batches   UploadBatch[]
   accounts  SocialAccount[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model SocialAccount {
-  id                String   @id @default(cuid())
+  id                String    @id @default(cuid())
   entityId          String
   platform          String
   handle            String
   externalAccountId String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+
+  accessToken       String?
+  refreshToken      String?
+  tokenType         String?
+  tokenExpiresAt    DateTime?
+  scope             String?
+  platformUserId    String?
+  username          String?
+  isActive          Boolean   @default(true)
+  lastError         String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   posts             ScheduledPost[]
 
   entity Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@index([entityId, platform])
 }
 
 model ScheduledPost {
-  id             String   @id @default(cuid())
+  id             String         @id @default(cuid())
   entityId       String
   accountId      String?
   platform       String
@@ -42,32 +55,36 @@ model ScheduledPost {
   publicVideoUrl String?
   videoFileName  String?
   scheduledAt    DateTime
-  status         String   @default("planned")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  status         String         @default("planned")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   batchPosts     BatchPost[]
 
   entity  Entity         @relation(fields: [entityId], references: [id], onDelete: Cascade)
   account SocialAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  @@index([status, scheduledAt])
+  @@index([entityId, scheduledAt])
+  @@index([accountId, scheduledAt])
 }
 
 model UploadBatch {
-  id        String   @id @default(cuid())
-  name      String
-  month     String
-  entityId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String      @id @default(cuid())
+  name       String
+  month      String
+  entityId   String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
   batchPosts BatchPost[]
 
   entity Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
 }
 
 model BatchPost {
-  id            String   @id @default(cuid())
-  uploadBatchId String
+  id              String   @id @default(cuid())
+  uploadBatchId   String
   scheduledPostId String
-  createdAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
 
   uploadBatch   UploadBatch   @relation(fields: [uploadBatchId], references: [id], onDelete: Cascade)
   scheduledPost ScheduledPost @relation(fields: [scheduledPostId], references: [id], onDelete: Cascade)

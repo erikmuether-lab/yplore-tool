@@ -1,8 +1,12 @@
 import { prisma } from "@/src/lib/prisma";
 
+type SendResult = {
+  success: boolean;
+  error?: string;
+};
+
 function getApiConfig() {
   return {
-    zernioApiUrl: process.env.ZERNIO_API_URL?.trim() || "",
     cronSecret: process.env.CRON_SECRET?.trim() || "",
   };
 }
@@ -14,17 +18,56 @@ function isAuthorized(request: Request) {
 
   if (!cronSecret) return false;
 
-  return (
-    authHeader === `Bearer ${cronSecret}` ||
-    cronHeader === cronSecret
-  );
+  return authHeader === `Bearer ${cronSecret}` || cronHeader === cronSecret;
 }
 
 function isPublicVideoUrl(videoUrl: string) {
   return /^https?:\/\//i.test(videoUrl);
 }
 
-async function sendPostNow(postId: string) {
+async function sendToYoutube(): Promise<SendResult> {
+  return {
+    success: false,
+    error: "YouTube Publisher noch nicht eingerichtet.",
+  };
+}
+
+async function sendToInstagram(): Promise<SendResult> {
+  return {
+    success: false,
+    error: "Instagram Publisher noch nicht eingerichtet.",
+  };
+}
+
+async function sendToTikTok(): Promise<SendResult> {
+  return {
+    success: false,
+    error: "TikTok Publisher noch nicht eingerichtet.",
+  };
+}
+
+async function sendViaPlatform(post: {
+  platform: string;
+}): Promise<SendResult> {
+  if (post.platform === "youtube") {
+    return sendToYoutube();
+  }
+
+  if (post.platform === "instagram") {
+    return sendToInstagram();
+  }
+
+  if (post.platform === "tiktok") {
+    return sendToTikTok();
+  }
+
+  return {
+    success: false,
+    error: `Unbekannte Plattform: ${post.platform}`,
+  };
+}
+
+async function sendPostNow(postId: string): Promise<SendResult> {
   const post = await prisma.scheduledPost.findUnique({
     where: { id: postId },
     include: {
@@ -37,32 +80,6 @@ async function sendPostNow(postId: string) {
     return { success: false, error: "Post nicht gefunden." };
   }
 
-  const zernioApiUrl = process.env.ZERNIO_API_URL?.trim() || "";
-
-  if (!zernioApiUrl) {
-    await prisma.scheduledPost.update({
-      where: { id: postId },
-      data: { status: "failed" },
-    });
-    return { success: false, error: "ZERNIO_API_URL fehlt." };
-  }
-
-  if (!post.entity?.apiKey?.trim()) {
-    await prisma.scheduledPost.update({
-      where: { id: postId },
-      data: { status: "failed" },
-    });
-    return { success: false, error: "API-Key fehlt." };
-  }
-
-  if (!post.account?.externalAccountId) {
-    await prisma.scheduledPost.update({
-      where: { id: postId },
-      data: { status: "failed" },
-    });
-    return { success: false, error: "externalAccountId fehlt." };
-  }
-
   const mediaUrl = String(post.publicVideoUrl ?? "").trim();
 
   if (!mediaUrl || !isPublicVideoUrl(mediaUrl)) {
@@ -70,7 +87,11 @@ async function sendPostNow(postId: string) {
       where: { id: postId },
       data: { status: "failed" },
     });
-    return { success: false, error: "publicVideoUrl fehlt oder ist ungültig." };
+
+    return {
+      success: false,
+      error: "publicVideoUrl fehlt oder ist ungültig.",
+    };
   }
 
   await prisma.scheduledPost.update({
@@ -79,52 +100,16 @@ async function sendPostNow(postId: string) {
   });
 
   try {
-    const payload = {
-      content: post.caption,
-      publishNow: true,
-      platforms: [
-        {
-          platform: post.platform,
-          accountId: post.account.externalAccountId,
-        },
-      ],
-      mediaItems: [
-        {
-          type: "video",
-          url: mediaUrl,
-        },
-      ],
-    };
-
-    const response = await fetch(`${zernioApiUrl}/posts`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${post.entity.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const responseText = await response.text().catch(() => "");
-
-    if (!response.ok) {
-      await prisma.scheduledPost.update({
-        where: { id: postId },
-        data: { status: "failed" },
-      });
-
-      return {
-        success: false,
-        error: `Zernio-Fehler: ${response.status} ${responseText}`.trim(),
-      };
-    }
+    const result = await sendViaPlatform(post);
 
     await prisma.scheduledPost.update({
       where: { id: postId },
-      data: { status: "sent" },
+      data: {
+        status: result.success ? "sent" : "failed",
+      },
     });
 
-    return { success: true };
+    return result;
   } catch (error) {
     await prisma.scheduledPost.update({
       where: { id: postId },
