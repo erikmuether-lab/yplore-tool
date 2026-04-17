@@ -30,7 +30,7 @@ type SocialAccount = {
 type Entity = {
   id: string;
   name: string;
-  apiKey: string;
+  apiKey: string | null;
   accounts: SocialAccount[];
 };
 
