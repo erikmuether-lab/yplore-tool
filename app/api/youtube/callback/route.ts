@@ -5,8 +5,7 @@ function getYouTubeConfig() {
   return {
     clientId: process.env.YOUTUBE_CLIENT_ID?.trim() || "",
     clientSecret: process.env.YOUTUBE_CLIENT_SECRET?.trim() || "",
-    appUrl:
-      process.env.NEXT_PUBLIC_APP_URL?.trim() || "http://localhost:3000",
+    appUrl: process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://yplore.com",
   };
 }
 
