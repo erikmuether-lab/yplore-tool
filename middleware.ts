@@ -18,7 +18,8 @@ export function middleware(request: NextRequest) {
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
-    pathname.startsWith("/api/uploads/r2-presign")
+    pathname.startsWith("/api/uploads/r2-presign") ||
+    pathname.startsWith("/api/cron")
   ) {
     return NextResponse.next();
   }
