@@ -799,15 +799,18 @@ export default async function Home({
         new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
     );
 
-  const filteredCalendarPosts = visiblePosts.map((post) => {
+   const filteredCalendarPosts = visiblePosts.map((post) => {
     const berlinParts = getBerlinDateParts(post.scheduledAt);
 
     return {
       id: post.id,
       day: berlinParts.day,
       label: `${formatPlatformLabel(post.platform)} ${formatBerlinTime(post.scheduledAt)}`,
+      status: post.status,
     };
   });
+
+  const plannedListPosts = visiblePosts.filter((post) => post.status !== "sent");
 
   const plannedPostsCount = selectedEntityPosts.filter(
     (post) => post.status === "planned"
@@ -1526,16 +1529,24 @@ export default async function Home({
                     <strong style={{ color: "#f8fafc" }}>Tag {day}</strong>
 
                     <div style={{ marginTop: "10px", display: "grid", gap: "6px" }}>
-                      {dayPosts.map((post) => (
+                                            {dayPosts.map((post) => (
                         <div
                           key={post.id}
                           style={{
                             fontSize: "12px",
                             borderRadius: "10px",
                             padding: "7px 8px",
-                            background: "#1f2937",
-                            color: "#f8fafc",
-                            border: "1px solid #374151",
+                            background:
+                              post.status === "sent"
+                                ? "rgba(16,185,129,0.15)"
+                                : "#1f2937",
+                            color:
+                              post.status === "sent" ? "#6ee7b7" : "#f8fafc",
+                            border:
+                              post.status === "sent"
+                                ? "1px solid rgba(16,185,129,0.4)"
+                                : "1px solid #374151",
+                            fontWeight: post.status === "sent" ? 700 : 500,
                           }}
                         >
                           {post.label}
@@ -1580,8 +1591,7 @@ export default async function Home({
                 {selectedEntity?.name} · {selectedMonthLabel}
               </small>
             </div>
-
-            {visiblePosts.length > 0 ? (
+                          {plannedListPosts.length > 0 ? (
               <>
                 <form method="post" action="/api/posts/update-status">
                   <input type="hidden" name="status" value="send-now" />
@@ -1607,7 +1617,7 @@ export default async function Home({
                       gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
                     }}
                   >
-                    {visiblePosts.map((post) => (
+                    {plannedListPosts.map((post) => (
                       <div
                         key={post.id}
                         style={{
@@ -1666,114 +1676,133 @@ export default async function Home({
                           {post.caption}
                         </div>
 
-                        <div style={{ ...mutedTextStyle(), marginTop: "10px", fontSize: "13px" }}>
+                        <div
+                          style={{
+                            ...mutedTextStyle(),
+                            marginTop: "10px",
+                            fontSize: "13px",
+                          }}
+                        >
                           {formatBerlinDateTime(post.scheduledAt)}
                         </div>
 
                         {post.videoFileName ? (
-                          <div style={{ ...mutedTextStyle(), marginTop: "6px", fontSize: "13px" }}>
+                          <div
+                            style={{
+                              ...mutedTextStyle(),
+                              marginTop: "6px",
+                              fontSize: "13px",
+                            }}
+                          >
                             Datei: {post.videoFileName}
                           </div>
                         ) : null}
-                      </div>
-                    ))}
-                  </div>
-                </form>
 
-                <form method="post" action="/api/posts/delete">
-                  <input type="hidden" name="returnTo" value={postsReturnTo} />
-
-                  <div
-                    style={{
-                      marginTop: "16px",
-                      display: "grid",
-                      gap: "12px",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                    }}
-                  >
-                    {visiblePosts.map((post) => (
-                      <input key={post.id} type="hidden" name="ignore-layout" value="" />
-                    ))}
-                  </div>
-                </form>
-
-                <div
-                  style={{
-                    marginTop: "16px",
-                    display: "grid",
-                    gap: "12px",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                  }}
-                >
-                  {visiblePosts.map((post) => (
-                    <div
-                      key={`actions-${post.id}`}
-                      style={{
-                        border: "1px solid #334155",
-                        borderRadius: "16px",
-                        padding: "14px",
-                        background: "#0f172a",
-                      }}
-                    >
-                      <div
-                        style={{
-                          marginTop: "14px",
-                          display: "grid",
-                          gap: "8px",
-                          gridTemplateColumns: "1fr 1fr",
-                        }}
-                      >
-                        <form method="post" action="/api/posts/update-status">
-                          <input type="hidden" name="id" value={post.id} />
-                          <input type="hidden" name="status" value="sending" />
-                          <input type="hidden" name="returnTo" value={postsReturnTo} />
-                          <button type="submit" style={smallButtonStyle()}>
+                        <div
+                          style={{
+                            marginTop: "14px",
+                            display: "grid",
+                            gap: "8px",
+                            gridTemplateColumns: "1fr 1fr",
+                          }}
+                        >
+                          <button
+                            type="submit"
+                            form={`sending-form-${post.id}`}
+                            style={smallButtonStyle()}
+                          >
                             Auf sending setzen
                           </button>
-                        </form>
 
-                        <form method="post" action="/api/posts/update-status">
-                          <input type="hidden" name="id" value={post.id} />
-                          <input type="hidden" name="status" value="send-now" />
-                          <input type="hidden" name="returnTo" value={postsReturnTo} />
-                          <button type="submit" style={smallPrimaryButtonStyle()}>
+                          <button
+                            type="submit"
+                            form={`send-now-form-${post.id}`}
+                            style={smallPrimaryButtonStyle()}
+                          >
                             Jetzt senden
                           </button>
-                        </form>
 
-                        <form method="post" action="/api/posts/update-status">
-                          <input type="hidden" name="id" value={post.id} />
-                          <input type="hidden" name="status" value="sent" />
-                          <input type="hidden" name="returnTo" value={postsReturnTo} />
-                          <button type="submit" style={smallButtonStyle()}>
+                          <button
+                            type="submit"
+                            form={`sent-form-${post.id}`}
+                            style={smallButtonStyle()}
+                          >
                             Auf sent setzen
                           </button>
-                        </form>
 
-                        <form method="post" action="/api/posts/update-status">
-                          <input type="hidden" name="id" value={post.id} />
-                          <input type="hidden" name="status" value="failed" />
-                          <input type="hidden" name="returnTo" value={postsReturnTo} />
-                          <button type="submit" style={smallButtonStyle()}>
+                          <button
+                            type="submit"
+                            form={`failed-form-${post.id}`}
+                            style={smallButtonStyle()}
+                          >
                             Auf failed setzen
                           </button>
-                        </form>
 
-                        <form
-                          method="post"
-                          action="/api/posts/delete"
-                          style={{ gridColumn: "1 / -1" }}
-                        >
-                          <input type="hidden" name="id" value={post.id} />
-                          <input type="hidden" name="returnTo" value={postsReturnTo} />
-                          <button type="submit" style={dangerButtonStyle()}>
+                          <button
+                            type="submit"
+                            form={`delete-form-${post.id}`}
+                            style={dangerButtonStyle()}
+                          >
                             Post löschen
                           </button>
-                        </form>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </form>
+
+                {plannedListPosts.map((post) => (
+                  <div key={`post-forms-${post.id}`} style={{ display: "none" }}>
+                    <form
+                      id={`sending-form-${post.id}`}
+                      method="post"
+                      action="/api/posts/update-status"
+                    >
+                      <input type="hidden" name="id" value={post.id} />
+                      <input type="hidden" name="status" value="sending" />
+                      <input type="hidden" name="returnTo" value={postsReturnTo} />
+                    </form>
+
+                    <form
+                      id={`send-now-form-${post.id}`}
+                      method="post"
+                      action="/api/posts/update-status"
+                    >
+                      <input type="hidden" name="id" value={post.id} />
+                      <input type="hidden" name="status" value="send-now" />
+                      <input type="hidden" name="returnTo" value={postsReturnTo} />
+                    </form>
+
+                    <form
+                      id={`sent-form-${post.id}`}
+                      method="post"
+                      action="/api/posts/update-status"
+                    >
+                      <input type="hidden" name="id" value={post.id} />
+                      <input type="hidden" name="status" value="sent" />
+                      <input type="hidden" name="returnTo" value={postsReturnTo} />
+                    </form>
+
+                    <form
+                      id={`failed-form-${post.id}`}
+                      method="post"
+                      action="/api/posts/update-status"
+                    >
+                      <input type="hidden" name="id" value={post.id} />
+                      <input type="hidden" name="status" value="failed" />
+                      <input type="hidden" name="returnTo" value={postsReturnTo} />
+                    </form>
+
+                    <form
+                      id={`delete-form-${post.id}`}
+                      method="post"
+                      action="/api/posts/delete"
+                    >
+                      <input type="hidden" name="id" value={post.id} />
+                      <input type="hidden" name="returnTo" value={postsReturnTo} />
+                    </form>
+                  </div>
+                ))}
               </>
             ) : (
               <div style={{ marginTop: "16px" }}>
