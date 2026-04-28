@@ -3,6 +3,16 @@ import { NextRequest, NextResponse } from "next/server";
 const USERNAME = process.env.BASIC_AUTH_USER || "";
 const PASSWORD = process.env.BASIC_AUTH_PASSWORD || "";
 
+const publicPaths = [
+  "/",
+  "/terms",
+  "/privacy",
+  "/api/cron/send-due-posts",
+  "/api/youtube/callback",
+  "/api/youtube/connect",
+  "/api/uploads/r2-presign",
+];
+
 function unauthorizedResponse() {
   return new NextResponse("Auth required", {
     status: 401,
@@ -16,10 +26,9 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
+    publicPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`)) ||
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon") ||
-    pathname.startsWith("/api/uploads/r2-presign") ||
-    pathname.startsWith("/api/cron")
+    pathname.startsWith("/favicon")
   ) {
     return NextResponse.next();
   }
