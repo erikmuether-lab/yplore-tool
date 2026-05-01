@@ -5,7 +5,7 @@ import CreatePostForm from "./components/CreatePostForm";
 
 type PlatformOption =
   | "Alle Plattformen"
-  | "TikTok"
+  | "TikTokk 
   | "Instagram Reel"
   | "YouTube Short";
 
@@ -1825,7 +1825,7 @@ export default async function Home({
             color: "#94a3b8",
           }}
         >
-          <a
+          <Link
             href="/terms"
             style={{
               color: "#93c5fd",
@@ -1835,9 +1835,9 @@ export default async function Home({
             }}
           >
             Terms of Service
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/privacy"
             style={{
               color: "#93c5fd",
@@ -1846,7 +1846,7 @@ export default async function Home({
             }}
           >
             Privacy Policy
-          </a>
+          </Link>
         </footer>
       </div>
     </main>
