@@ -1815,6 +1815,43 @@ export default async function Home({
             )}
           </div>
         </section>
+                <footer
+          style={{
+            marginTop: "40px",
+            paddingTop: "24px",
+            borderTop: "1px solid #243041",
+            textAlign: "center",
+            fontSize: "13px",
+            color: "#94a3b8",
+          }}
+        >
+          <a
+            href="/terms"
+            style={{
+              color: "#93c5fd",
+              marginRight: "16px",
+              textDecoration: "none",
+              fontWeight: 700,
+            }}
+          >
+            Terms of Service
+          </a>
+
+          <a
+            href="/privacy"
+            style={{
+              color: "#93c5fd",
+              textDecoration: "none",
+              fontWeight: 700,
+            }}
+          >
+            Privacy Policy
+          </a>
+        </footer>
+      </div>
+    </main>
+  );
+}
       </div>
     </main>
   );
