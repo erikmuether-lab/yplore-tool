@@ -5,7 +5,7 @@ import CreatePostForm from "./components/CreatePostForm";
 
 type PlatformOption =
   | "Alle Plattformen"
-  | "TikTokk 
+  | "TikTok"
   | "Instagram Reel"
   | "YouTube Short";
 
