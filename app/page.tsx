@@ -979,7 +979,16 @@ export default async function Home({
                 >
                   {showCreateForm ? "Formular schließen" : "Post erstellen"}
                 </Link>
-
+<Link href="/tiktok-demo" style={{
+  padding: "10px 14px",
+  borderRadius: "10px",
+  background: "#000",
+  color: "#fff",
+  fontWeight: 700,
+  textDecoration: "none"
+}}>
+  Connect TikTok
+</Link>
                 <Link
                   href={buildFilterHref({
                     entity: selectedEntityName,
