@@ -9,7 +9,12 @@ if (!connectionString) {
   throw new Error("SUPABASE_DATABASE_URL oder DATABASE_URL fehlt.");
 }
 
-const adapter = new PrismaPg({ connectionString });
+const adapter = new PrismaPg({
+  connectionString,
+  max: 1,
+  idleTimeoutMillis: 10_000,
+  connectionTimeoutMillis: 10_000,
+});
 
 const globalForPrisma = globalThis as typeof globalThis & {
   prisma?: PrismaClient;
