@@ -15,7 +15,6 @@ function getR2Config() {
 
 function canUploadToR2() {
   const config = getR2Config();
-
   return Boolean(
     config.endpoint &&
       config.accessKeyId &&
@@ -52,23 +51,13 @@ function normalizePlatforms(input: unknown) {
     .filter((value, index, array) => array.indexOf(value) === index);
 }
 
-export async function GET() {
-  const posts = await prisma.scheduledPost.findMany({
-    orderBy: { scheduledAt: "asc" },
-    include: {
-      entity: true,
-      account: true,
-    },
-    take: 500,
-  });
-
-  return Response.json(posts);
-}
-
 export async function POST(request: Request) {
   try {
     const contentType = request.headers.get("content-type") ?? "";
 
+    // =========================
+    // MULTIPART (UPLOAD)
+    // =========================
     if (contentType.includes("multipart/form-data")) {
       const formData = await request.formData();
 
@@ -83,10 +72,7 @@ export async function POST(request: Request) {
 
       if (!entityId || platforms.length === 0 || !caption || !date || !time) {
         return Response.json(
-          {
-            error:
-              "entityId, mindestens eine Plattform, caption, date und time sind erforderlich.",
-          },
+          { error: "Pflichtfelder fehlen." },
           { status: 400 }
         );
       }
@@ -97,7 +83,7 @@ export async function POST(request: Request) {
       });
 
       if (!entity) {
-        return Response.json({ error: "Einheit nicht gefunden." }, { status: 404 });
+        return Response.json({ error: "Entity nicht gefunden." }, { status: 404 });
       }
 
       let safeFileName = "";
@@ -111,9 +97,7 @@ export async function POST(request: Request) {
         safeFileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
         const filePath = path.join(uploadsDir, safeFileName);
 
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-
+        const buffer = Buffer.from(await file.arrayBuffer());
         await writeFile(filePath, buffer);
 
         videoUrl = `/uploads/${safeFileName}`;
@@ -134,76 +118,62 @@ export async function POST(request: Request) {
 
             publicVideoUrl = buildPublicFileUrl(safeFileName);
           } catch (error) {
-            console.error("R2 upload fehlgeschlagen:", error);
-            publicVideoUrl = null;
+            console.error("R2 Upload Fehler:", error);
           }
         }
       }
 
       if (!publicVideoUrl && !videoUrl) {
         return Response.json(
-          {
-            error:
-              "Bitte entweder eine Video-Datei hochladen oder eine öffentliche Video-URL eintragen.",
-          },
+          { error: "Kein Video vorhanden." },
           { status: 400 }
         );
       }
 
       const scheduledAt = new Date(`${date}T${time}:00`);
 
-      const posts = await prisma.$transaction(
-        platforms.map((platform) => {
-          const account =
-            entity.accounts.find((account) => account.platform === platform) ?? null;
+      // 🔥 FIX: KEINE PARALLELEN DB CALLS
+      const posts = [];
 
-          return prisma.scheduledPost.create({
-            data: {
-              entityId,
-              accountId: account?.id ?? null,
-              platform,
-              title: title || null,
-              caption,
-              videoUrl: videoUrl || publicVideoUrl || "",
-              publicVideoUrl,
-              videoFileName:
-                file instanceof File && file.size > 0 ? file.name : null,
-              scheduledAt,
-              status: "planned",
-            },
-          });
-        })
-      );
+      for (const platform of platforms) {
+        const account =
+          entity.accounts.find((a) => a.platform === platform) ?? null;
 
-      return Response.json(
-        {
-          success: true,
-          createdCount: posts.length,
-          posts,
-        },
-        { status: 201 }
-      );
+        const created = await prisma.scheduledPost.create({
+          data: {
+            entityId,
+            accountId: account?.id ?? null,
+            platform,
+            title: title || null,
+            caption,
+            videoUrl: videoUrl || publicVideoUrl || "",
+            publicVideoUrl,
+            videoFileName:
+              file instanceof File && file.size > 0 ? file.name : null,
+            scheduledAt,
+            status: "planned",
+          },
+        });
+
+        posts.push(created);
+      }
+
+      return Response.json({ success: true, createdCount: posts.length, posts });
     }
 
+    // =========================
+    // JSON REQUEST
+    // =========================
     const body = await request.json();
 
     const entityId = String(body.entityId ?? "").trim();
     const platforms = normalizePlatforms(body.platforms ?? body.platform);
-    const title = String(body.title ?? "").trim();
     const caption = String(body.caption ?? "").trim();
     const videoUrl = String(body.videoUrl ?? "").trim();
-    const publicVideoUrl = String(body.publicVideoUrl ?? "").trim();
-    const videoFileName = String(body.videoFileName ?? "").trim();
     const scheduledAt = String(body.scheduledAt ?? "").trim();
 
     if (!entityId || platforms.length === 0 || !caption || !videoUrl || !scheduledAt) {
-      return Response.json(
-        {
-          error:
-            "entityId, mindestens eine Plattform, caption, videoUrl und scheduledAt sind erforderlich.",
-        },
-        { status: 400 }
-      );
+      return Response.json({ error: "Pflichtfelder fehlen." }, { status: 400 });
     }
 
     const entity = await prisma.entity.findUnique({
@@ -212,48 +182,36 @@ export async function POST(request: Request) {
     });
 
     if (!entity) {
-      return Response.json({ error: "Einheit nicht gefunden." }, { status: 404 });
+      return Response.json({ error: "Entity nicht gefunden." }, { status: 404 });
     }
 
-    const posts = await prisma.$transaction(
-      platforms.map((platform) => {
-        const account =
-          entity.accounts.find((account) => account.platform === platform) ?? null;
+    const posts = [];
 
-        return prisma.scheduledPost.create({
-          data: {
-            entityId,
-            accountId: account?.id ?? null,
-            platform,
-            title: title || null,
-            caption,
-            videoUrl,
-            publicVideoUrl: publicVideoUrl || null,
-            videoFileName: videoFileName || null,
-            scheduledAt: new Date(scheduledAt),
-            status: "planned",
-          },
-          include: {
-            entity: true,
-            account: true,
-          },
-        });
-      })
-    );
+    for (const platform of platforms) {
+      const account =
+        entity.accounts.find((a) => a.platform === platform) ?? null;
 
-    return Response.json(
-      {
-        success: true,
-        createdCount: posts.length,
-        posts,
-      },
-      { status: 201 }
-    );
+      const created = await prisma.scheduledPost.create({
+        data: {
+          entityId,
+          accountId: account?.id ?? null,
+          platform,
+          caption,
+          videoUrl,
+          scheduledAt: new Date(scheduledAt),
+          status: "planned",
+        },
+      });
+
+      posts.push(created);
+    }
+
+    return Response.json({ success: true, createdCount: posts.length, posts });
   } catch (error) {
-    console.error("POST /api/posts Fehler:", error);
+    console.error("POST Fehler:", error);
 
     return Response.json(
-      { error: error instanceof Error ? error.message : "Unbekannter Fehler." },
+      { error: error instanceof Error ? error.message : "Unbekannter Fehler" },
       { status: 500 }
     );
   }
