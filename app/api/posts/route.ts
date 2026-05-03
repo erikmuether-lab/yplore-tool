@@ -158,7 +158,7 @@ export async function POST(request: Request) {
         posts.push(created);
       }
 
-      return Response.json({ success: true, createdCount: posts.length, posts });
+      return Response.redirect(new URL("/", request.url), 303);
     }
 
     // =========================
@@ -206,7 +206,7 @@ export async function POST(request: Request) {
       posts.push(created);
     }
 
-    return Response.json({ success: true, createdCount: posts.length, posts });
+    return Response.redirect(new URL("/", request.url), 303);
   } catch (error) {
     console.error("POST Fehler:", error);
 
