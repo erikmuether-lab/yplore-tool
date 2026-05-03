@@ -43,6 +43,15 @@ function buildPublicFileUrl(fileName: string) {
   return `${publicBaseUrl.replace(/\/+$/, "")}/${fileName}`;
 }
 
+function normalizePlatforms(input: unknown) {
+  const values = Array.isArray(input) ? input : [input];
+
+  return values
+    .map((value) => String(value ?? "").trim().toLowerCase())
+    .filter(Boolean)
+    .filter((value, index, array) => array.indexOf(value) === index);
+}
+
 export async function GET() {
   const posts = await prisma.scheduledPost.findMany({
     orderBy: { scheduledAt: "asc" },
@@ -64,7 +73,7 @@ export async function POST(request: Request) {
       const formData = await request.formData();
 
       const entityId = String(formData.get("entityId") ?? "").trim();
-      const platform = String(formData.get("platform") ?? "").trim().toLowerCase();
+      const platforms = normalizePlatforms(formData.getAll("platforms"));
       const title = String(formData.get("title") ?? "").trim();
       const caption = String(formData.get("caption") ?? "").trim();
       const date = String(formData.get("date") ?? "").trim();
@@ -72,18 +81,11 @@ export async function POST(request: Request) {
       const publicVideoUrlInput = String(formData.get("publicVideoUrl") ?? "").trim();
       const file = formData.get("videoFile");
 
-      if (
-        !entityId ||
-        !platform ||
-        !caption ||
-        !date ||
-        !time ||
-        !(file instanceof File)
-      ) {
+      if (!entityId || platforms.length === 0 || !caption || !date || !time) {
         return Response.json(
           {
             error:
-              "entityId, platform, caption, date, time und videoFile sind erforderlich.",
+              "entityId, mindestens eine Plattform, caption, date und time sind erforderlich.",
           },
           { status: 400 }
         );
@@ -98,66 +100,95 @@ export async function POST(request: Request) {
         return Response.json({ error: "Einheit nicht gefunden." }, { status: 404 });
       }
 
-      const uploadsDir = path.join(process.cwd(), "uploads");
-      await mkdir(uploadsDir, { recursive: true });
-
-      const safeFileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-      const filePath = path.join(uploadsDir, safeFileName);
-
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      await writeFile(filePath, buffer);
-
+      let safeFileName = "";
+      let videoUrl = publicVideoUrlInput;
       let publicVideoUrl: string | null = publicVideoUrlInput || null;
 
-      if (!publicVideoUrl && canUploadToR2()) {
-        try {
-          const r2 = createR2Client();
-          const { bucketName } = getR2Config();
+      if (file instanceof File && file.size > 0) {
+        const uploadsDir = path.join(process.cwd(), "uploads");
+        await mkdir(uploadsDir, { recursive: true });
 
-          await r2.send(
-            new PutObjectCommand({
-              Bucket: bucketName,
-              Key: safeFileName,
-              Body: buffer,
-              ContentType: file.type || "video/mp4",
-            })
-          );
+        safeFileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+        const filePath = path.join(uploadsDir, safeFileName);
 
-          publicVideoUrl = buildPublicFileUrl(safeFileName);
-        } catch (error) {
-          console.error("R2 upload fehlgeschlagen:", error);
-          publicVideoUrl = null;
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+
+        await writeFile(filePath, buffer);
+
+        videoUrl = `/uploads/${safeFileName}`;
+
+        if (!publicVideoUrl && canUploadToR2()) {
+          try {
+            const r2 = createR2Client();
+            const { bucketName } = getR2Config();
+
+            await r2.send(
+              new PutObjectCommand({
+                Bucket: bucketName,
+                Key: safeFileName,
+                Body: buffer,
+                ContentType: file.type || "video/mp4",
+              })
+            );
+
+            publicVideoUrl = buildPublicFileUrl(safeFileName);
+          } catch (error) {
+            console.error("R2 upload fehlgeschlagen:", error);
+            publicVideoUrl = null;
+          }
         }
       }
 
-      const account = entity.accounts.find((a) => a.platform === platform) ?? null;
+      if (!publicVideoUrl && !videoUrl) {
+        return Response.json(
+          {
+            error:
+              "Bitte entweder eine Video-Datei hochladen oder eine öffentliche Video-URL eintragen.",
+          },
+          { status: 400 }
+        );
+      }
+
       const scheduledAt = new Date(`${date}T${time}:00`);
-      const videoUrl = `/uploads/${safeFileName}`;
 
-      await prisma.scheduledPost.create({
-        data: {
-          entityId,
-          accountId: account?.id ?? null,
-          platform,
-          title: title || null,
-          caption,
-          videoUrl,
-          publicVideoUrl,
-          videoFileName: file.name,
-          scheduledAt,
-          status: "planned",
+      const posts = await prisma.$transaction(
+        platforms.map((platform) => {
+          const account =
+            entity.accounts.find((account) => account.platform === platform) ?? null;
+
+          return prisma.scheduledPost.create({
+            data: {
+              entityId,
+              accountId: account?.id ?? null,
+              platform,
+              title: title || null,
+              caption,
+              videoUrl: videoUrl || publicVideoUrl || "",
+              publicVideoUrl,
+              videoFileName:
+                file instanceof File && file.size > 0 ? file.name : null,
+              scheduledAt,
+              status: "planned",
+            },
+          });
+        })
+      );
+
+      return Response.json(
+        {
+          success: true,
+          createdCount: posts.length,
+          posts,
         },
-      });
-
-      return Response.redirect(new URL("/", request.url), 303);
+        { status: 201 }
+      );
     }
 
     const body = await request.json();
 
     const entityId = String(body.entityId ?? "").trim();
-    const platform = String(body.platform ?? "").trim().toLowerCase();
+    const platforms = normalizePlatforms(body.platforms ?? body.platform);
     const title = String(body.title ?? "").trim();
     const caption = String(body.caption ?? "").trim();
     const videoUrl = String(body.videoUrl ?? "").trim();
@@ -165,11 +196,11 @@ export async function POST(request: Request) {
     const videoFileName = String(body.videoFileName ?? "").trim();
     const scheduledAt = String(body.scheduledAt ?? "").trim();
 
-    if (!entityId || !platform || !caption || !videoUrl || !scheduledAt) {
+    if (!entityId || platforms.length === 0 || !caption || !videoUrl || !scheduledAt) {
       return Response.json(
         {
           error:
-            "entityId, platform, caption, videoUrl und scheduledAt sind erforderlich.",
+            "entityId, mindestens eine Plattform, caption, videoUrl und scheduledAt sind erforderlich.",
         },
         { status: 400 }
       );
@@ -184,28 +215,40 @@ export async function POST(request: Request) {
       return Response.json({ error: "Einheit nicht gefunden." }, { status: 404 });
     }
 
-    const account = entity.accounts.find((a) => a.platform === platform) ?? null;
+    const posts = await prisma.$transaction(
+      platforms.map((platform) => {
+        const account =
+          entity.accounts.find((account) => account.platform === platform) ?? null;
 
-    const post = await prisma.scheduledPost.create({
-      data: {
-        entityId,
-        accountId: account?.id ?? null,
-        platform,
-        title: title || null,
-        caption,
-        videoUrl,
-        publicVideoUrl: publicVideoUrl || null,
-        videoFileName: videoFileName || null,
-        scheduledAt: new Date(scheduledAt),
-        status: "planned",
-      },
-      include: {
-        entity: true,
-        account: true,
-      },
-    });
+        return prisma.scheduledPost.create({
+          data: {
+            entityId,
+            accountId: account?.id ?? null,
+            platform,
+            title: title || null,
+            caption,
+            videoUrl,
+            publicVideoUrl: publicVideoUrl || null,
+            videoFileName: videoFileName || null,
+            scheduledAt: new Date(scheduledAt),
+            status: "planned",
+          },
+          include: {
+            entity: true,
+            account: true,
+          },
+        });
+      })
+    );
 
-    return Response.json(post, { status: 201 });
+    return Response.json(
+      {
+        success: true,
+        createdCount: posts.length,
+        posts,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("POST /api/posts Fehler:", error);
 
