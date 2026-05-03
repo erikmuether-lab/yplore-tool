@@ -3,6 +3,35 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
+function createBerlinDate(date: string, time: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+
+  const utcGuess = new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
+
+  const berlinParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Berlin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(utcGuess);
+
+  const berlinHour = Number(
+    berlinParts.find((part) => part.type === "hour")?.value ?? "0"
+  );
+
+  const offsetHours = berlinHour - hour;
+
+  return new Date(Date.UTC(year, month - 1, day, hour - offsetHours, minute, 0));
+}
+
+function getReturnUrl(request: Request) {
+  return request.headers.get("referer") || new URL("/", request.url).toString();
+}
+
 function getR2Config() {
   return {
     endpoint: process.env.R2_ENDPOINT?.trim() || "",
@@ -130,7 +159,7 @@ export async function POST(request: Request) {
         );
       }
 
-      const scheduledAt = new Date(`${date}T${time}:00`);
+      const scheduledAt = createBerlinDate(date, time);
 
       // 🔥 FIX: KEINE PARALLELEN DB CALLS
       const posts = [];
@@ -158,7 +187,7 @@ export async function POST(request: Request) {
         posts.push(created);
       }
 
-      return Response.redirect(new URL("/", request.url), 303);
+      return Response.redirect(getReturnUrl(request), 303);
     }
 
     // =========================
@@ -206,7 +235,7 @@ export async function POST(request: Request) {
       posts.push(created);
     }
 
-    return Response.redirect(new URL("/", request.url), 303);
+    return Response.redirect(getReturnUrl(request), 303);
   } catch (error) {
     console.error("POST Fehler:", error);
 
