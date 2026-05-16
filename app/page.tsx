@@ -979,15 +979,32 @@ export default async function Home({
                 >
                   {showCreateForm ? "Formular schließen" : "Post erstellen"}
                 </Link>
-<Link href="/tiktok-demo" style={{
-  padding: "10px 14px",
-  borderRadius: "10px",
-  background: "#000",
-  color: "#fff",
-  fontWeight: 700,
-  textDecoration: "none"
-}}>
-  Connect TikTok
+<Link
+  href={`/api/tiktok/connect?entityId=${selectedEntity?.id ?? ""}`}
+  style={{
+    padding: "10px 14px",
+    borderRadius: "10px",
+    background: "#000",
+    color: "#fff",
+    fontWeight: 700,
+    textDecoration: "none",
+  }}
+>
+  TikTok verbinden
+</Link>
+
+<Link
+  href={`/api/instagram/connect?entityId=${selectedEntity?.id ?? ""}`}
+  style={{
+    padding: "10px 14px",
+    borderRadius: "10px",
+    background: "#e1306c",
+    color: "#fff",
+    fontWeight: 700,
+    textDecoration: "none",
+  }}
+>
+  Instagram verbinden
 </Link>
                 <Link
                   href={buildFilterHref({
