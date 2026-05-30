@@ -858,7 +858,7 @@ export default async function Home({
       <div style={shellStyle()}>
         <header style={heroStyle()}>
           <div style={heroEyebrowStyle()}>YPLORE Workspace</div>
-          <h1 style={heroTitleStyle()}>YPLORE Tool</h1>
+          <h1 style={heroTitleStyle()}>YPLORE</h1>
           <p style={heroTextStyle()}>
             Social-Media-Planung, Upload und Veröffentlichung in einer klaren,
             aufgeräumten Oberfläche.
