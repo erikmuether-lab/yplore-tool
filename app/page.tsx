@@ -858,7 +858,18 @@ export default async function Home({
       <div style={shellStyle()}>
         <header style={heroStyle()}>
           <div style={heroEyebrowStyle()}>YPLORE Workspace</div>
-          <h1 style={heroTitleStyle()}>YPLORE</h1>
+          <img
+  src="/yplore-icon.png"
+  alt="YPLORE icon"
+  style={{
+    width: "72px",
+    height: "72px",
+    borderRadius: "16px",
+    marginBottom: "16px",
+  }}
+/>
+
+<h1 style={heroTitleStyle()}>YPLORE</h1>
           <p style={heroTextStyle()}>
             Social-Media-Planung, Upload und Veröffentlichung in einer klaren,
             aufgeräumten Oberfläche.

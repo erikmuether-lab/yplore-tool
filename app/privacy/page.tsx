@@ -1,6 +1,36 @@
 export default function PrivacyPage() {
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif", lineHeight: 1.6 }}>
+      <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    marginBottom: "24px",
+  }}
+>
+  <img
+    src="/yplore-icon.png"
+    alt="YPLORE"
+    style={{
+      width: "72px",
+      height: "72px",
+      borderRadius: "16px",
+      marginBottom: "12px",
+    }}
+  />
+
+  <h1
+    style={{
+      color: "#ffffff",
+      margin: 0,
+      fontSize: "36px",
+      fontWeight: 800,
+    }}
+  >
+    YPLORE
+  </h1>
+</div>
       <h1>Privacy Policy</h1>
       <p>Last updated: April 2026</p>
 
