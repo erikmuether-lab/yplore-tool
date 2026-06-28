@@ -991,7 +991,7 @@ export default async function Home({
                   {showCreateForm ? "Formular schließen" : "Post erstellen"}
                 </Link>
 <Link
-  href="/tiktok-demo"
+  href={`/api/tiktok/connect?entityId=${selectedEntity?.id ?? ""}`}
   style={{
     padding: "10px 14px",
     borderRadius: "10px",
