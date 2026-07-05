@@ -990,7 +990,7 @@ export default async function Home({
                 >
                   {showCreateForm ? "Formular schließen" : "Post erstellen"}
                 </Link>
-<Link
+  <a
   href={`/api/tiktok/connect?entityId=${selectedEntity?.id ?? ""}`}
   style={{
     padding: "10px 14px",
@@ -1002,7 +1002,7 @@ export default async function Home({
   }}
 >
   TikTok verbinden
-</Link>
+</a>
 
 <Link
   href={`/api/instagram/connect?entityId=${selectedEntity?.id ?? ""}`}
