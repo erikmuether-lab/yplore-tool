@@ -31,11 +31,11 @@ export async function GET(request: Request) {
   authUrl.searchParams.set(
     "scope",
     [
-      "pages_show_list",
-      "pages_read_engagement",
-      "instagram_basic",
-      "instagram_content_publish",
-    ].join(",")
+  "pages_show_list",
+  "pages_read_engagement",
+  "instagram_business_basic",
+  "instagram_content_publish",
+].join(",")
   );
 
   return Response.redirect(authUrl.toString(), 302);
