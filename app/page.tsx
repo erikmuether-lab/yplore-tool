@@ -25,6 +25,7 @@ type SocialAccount = {
   platform: string;
   handle: string;
   externalAccountId?: string | null;
+  accessToken?: string | null;
 };
 
 type Entity = {
@@ -774,6 +775,12 @@ export default async function Home({
   const selectedEntity =
     entities.find((entity) => entity.name === selectedEntityName) ?? entities[0];
 
+    const connectedTikTok = selectedEntity?.accounts?.find(
+  (account) =>
+    account.platform === "tiktok" &&
+    account.accessToken
+);
+
   const posts: ApiPost[] = selectedEntity
     ? await getPosts(selectedEntity.id, selectedYear, selectedMonthIndex)
     : [];
@@ -990,19 +997,33 @@ export default async function Home({
                 >
                   {showCreateForm ? "Formular schließen" : "Post erstellen"}
                 </Link>
+{connectedTikTok ? (
+  <div
+    style={{
+      padding: "10px 14px",
+      borderRadius: "10px",
+      background: "#16a34a",
+      color: "#fff",
+      fontWeight: 700,
+    }}
+  >
+    ✅ TikTok verbunden
+  </div>
+) : (
   <a
-  href={`/api/tiktok/connect?entityId=${selectedEntity?.id ?? ""}`}
-  style={{
-    padding: "10px 14px",
-    borderRadius: "10px",
-    background: "#000",
-    color: "#fff",
-    fontWeight: 700,
-    textDecoration: "none",
-  }}
->
-  TikTok verbinden
-</a>
+    href={`/api/tiktok/connect?entityId=${selectedEntity?.id ?? ""}`}
+    style={{
+      padding: "10px 14px",
+      borderRadius: "10px",
+      background: "#000",
+      color: "#fff",
+      fontWeight: 700,
+      textDecoration: "none",
+    }}
+  >
+    TikTok verbinden
+  </a>
+)}
 
 <Link
   href={`/api/instagram/connect?entityId=${selectedEntity?.id ?? ""}`}
