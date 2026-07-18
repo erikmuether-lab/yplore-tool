@@ -11,35 +11,32 @@ model Entity {
   id        String          @id @default(cuid())
   name      String
   apiKey    String?
-  posts     ScheduledPost[]
-  batches   UploadBatch[]
-  accounts  SocialAccount[]
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
+  posts     ScheduledPost[]
+  accounts  SocialAccount[]
+  batches   UploadBatch[]
 }
 
 model SocialAccount {
-  id                String    @id @default(cuid())
+  id                String          @id @default(cuid())
   entityId          String
   platform          String
   handle            String
   externalAccountId String?
-
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
   accessToken       String?
-  refreshToken      String?
-  tokenType         String?
-  tokenExpiresAt    DateTime?
-  scope             String?
-  platformUserId    String?
-  username          String?
-  isActive          Boolean   @default(true)
+  isActive          Boolean         @default(true)
   lastError         String?
-
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  platformUserId    String?
+  refreshToken      String?
+  scope             String?
+  tokenExpiresAt    DateTime?
+  tokenType         String?
+  username          String?
   posts             ScheduledPost[]
-
-  entity Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  entity            Entity          @relation(fields: [entityId], references: [id], onDelete: Cascade)
 
   @@index([entityId, platform])
 }
@@ -59,9 +56,8 @@ model ScheduledPost {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   batchPosts     BatchPost[]
-
-  entity  Entity         @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  account SocialAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  account        SocialAccount? @relation(fields: [accountId], references: [id])
+  entity         Entity         @relation(fields: [entityId], references: [id], onDelete: Cascade)
 
   @@index([status, scheduledAt])
   @@index([entityId, scheduledAt])
@@ -76,16 +72,14 @@ model UploadBatch {
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   batchPosts BatchPost[]
-
-  entity Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  entity     Entity      @relation(fields: [entityId], references: [id], onDelete: Cascade)
 }
 
 model BatchPost {
-  id              String   @id @default(cuid())
+  id              String        @id @default(cuid())
   uploadBatchId   String
   scheduledPostId String
-  createdAt       DateTime @default(now())
-
-  uploadBatch   UploadBatch   @relation(fields: [uploadBatchId], references: [id], onDelete: Cascade)
-  scheduledPost ScheduledPost @relation(fields: [scheduledPostId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now())
+  scheduledPost   ScheduledPost @relation(fields: [scheduledPostId], references: [id], onDelete: Cascade)
+  uploadBatch     UploadBatch   @relation(fields: [uploadBatchId], references: [id], onDelete: Cascade)
 }
