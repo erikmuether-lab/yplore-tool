@@ -207,6 +207,8 @@ export async function GET(request: Request) {
 
   const now = new Date();
 
+  console.log("DATABASE_URL:", process.env.DATABASE_URL);
+
   const duePosts = await prisma.scheduledPost.findMany({
     where: {
       status: "planned",
@@ -223,6 +225,16 @@ export async function GET(request: Request) {
     },
     take: 50,
   });
+
+  console.log("Due Posts:", duePosts.length);
+console.log(
+  duePosts.map((p) => ({
+    id: p.id,
+    status: p.status,
+    scheduledAt: p.scheduledAt,
+    platform: p.platform,
+  }))
+);
 
   const results: Array<{
     id: string;
