@@ -87,6 +87,8 @@ async function sendToTikTok(post: {
 
     const data = await response.json().catch(() => null);
 
+    console.log("TikTok Response:", JSON.stringify(data, null, 2));
+
     if (!response.ok) {
       return {
         success: false,
