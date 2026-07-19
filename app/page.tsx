@@ -998,28 +998,34 @@ export default async function Home({
                   {showCreateForm ? "Formular schließen" : "Post erstellen"}
                 </Link>
 {connectedTikTok ? (
-  <div
+  <a
+    href={`/api/tiktok/connect?entityId=${selectedEntity?.id ?? ""}`}
     style={{
       padding: "10px 14px",
       borderRadius: "10px",
       background: "#16a34a",
       color: "#fff",
       fontWeight: 700,
+      textDecoration: "none",
     }}
   >
-   <a
-  href={`/api/tiktok/connect?entityId=${selectedEntity?.id ?? ""}`}
-  style={{
-    padding: "10px 14px",
-    borderRadius: "10px",
-    background: "#16a34a",
-    color: "#fff",
-    fontWeight: 700,
-    textDecoration: "none",
-  }}
->
-  ✅ TikTok neu verbinden
-</a>
+    ✅ TikTok neu verbinden
+  </a>
+) : (
+  <a
+    href={`/api/tiktok/connect?entityId=${selectedEntity?.id ?? ""}`}
+    style={{
+      padding: "10px 14px",
+      borderRadius: "10px",
+      background: "#000",
+      color: "#fff",
+      fontWeight: 700,
+      textDecoration: "none",
+    }}
+  >
+    TikTok verbinden
+  </a>
+)}
 
 <Link
   href={`/api/instagram/connect?entityId=${selectedEntity?.id ?? ""}`}
