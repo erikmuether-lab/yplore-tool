@@ -1007,8 +1007,7 @@ export default async function Home({
       fontWeight: 700,
     }}
   >
-    ✅ TikTok verbunden
- <a
+   <a
   href={`/api/tiktok/connect?entityId=${selectedEntity?.id ?? ""}`}
   style={{
     padding: "10px 14px",
