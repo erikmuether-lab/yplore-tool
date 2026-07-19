@@ -151,6 +151,13 @@ async function sendPostNow(postId: string): Promise<SendResult> {
     },
   });
 
+  console.log("POST ACCOUNT:", {
+  accountId: post?.account?.id,
+  platform: post?.account?.platform,
+  hasAccessToken: !!post?.account?.accessToken,
+  tokenStart: post?.account?.accessToken?.slice(0, 12),
+});
+
   if (!post) {
     return { success: false, error: "Post nicht gefunden." };
   }
