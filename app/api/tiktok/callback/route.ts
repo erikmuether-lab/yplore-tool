@@ -193,6 +193,18 @@ console.log("TOKEN RESPONSE:", JSON.stringify(tokenData, null, 2));
       });
     }
 
+const savedAccount = await prisma.socialAccount.findFirst({
+  where: {
+    entityId,
+    platform: "tiktok",
+  },
+});
+
+console.log(
+  "SAVED ACCOUNT:",
+  JSON.stringify(savedAccount, null, 2)
+);
+
     // 5. Zurück zur YPLORE-Startseite
     return Response.redirect(
       new URL("/?tiktok=connected", request.url),
