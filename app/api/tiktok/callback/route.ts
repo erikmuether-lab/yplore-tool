@@ -104,6 +104,8 @@ export async function GET(request: Request) {
     const tokenData =
       (await tokenResponse.json()) as TikTokTokenResponse;
 
+console.log("TOKEN RESPONSE:", JSON.stringify(tokenData, null, 2));
+
     if (
       !tokenResponse.ok ||
       !tokenData.access_token ||
