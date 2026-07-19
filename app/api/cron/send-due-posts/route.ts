@@ -167,6 +167,13 @@ async function sendPostNow(postId: string): Promise<SendResult> {
     data: { status: "sending" },
   });
 
+if (!post.account?.accessToken) {
+  return {
+    success: false,
+    error: `DEBUG: Kein Access Token. accountId=${post.account?.id}, platform=${post.account?.platform}`,
+  };
+}
+
   try {
     const result = await sendViaPlatform({
       id: post.id,
