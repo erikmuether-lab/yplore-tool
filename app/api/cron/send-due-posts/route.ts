@@ -211,13 +211,10 @@ export async function GET(request: Request) {
 
   console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
-  const duePosts = await prisma.scheduledPost.findMany({
-    where: {
-      status: "planned",
-      scheduledAt: {
-        lte: now,
-      },
-    },
+ const duePosts = await prisma.scheduledPost.findMany({
+  where: {
+    status: "planned",
+  },
     orderBy: {
       scheduledAt: "asc",
     },
